@@ -3,7 +3,8 @@
 SH_CONFIG="script_config"
 
 
-curpath=$(dirname $(realpath $0))
+curpath=$(dirname "$(realpath $0)")
+# cd "$curpath"
 CONF_PATH="$curpath/conf"
 
 if [ -z "$curpath" ]; then

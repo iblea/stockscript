@@ -7,7 +7,7 @@
     },
     "flask": {
         "http_port": 8842,
-        "https_port": 8843
+        "https_port": 0
     },
     "bot": {
         "use_discord": true,
