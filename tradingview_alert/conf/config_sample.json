@@ -1,9 +1,12 @@
 {
     "trade": "NQ!1",
-
     "rest_api": {
         "use": "kiwoom",
         "kiwoom": "",
         "koreainvestment": ""
+    },
+    "flask": {
+        "http_port": 5001,
+        "https_port": 5002
     }
 }

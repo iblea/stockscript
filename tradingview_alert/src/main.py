@@ -1,22 +1,17 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import json
+import config
+import webserver_run as webserver
 
-SCRIPT_DIR: str = os.path.dirname(os.path.abspath(__file__))
-CONFIG_FILE: str = "conf/config.json"
-CONFIG_PATH: str = os.path.join(SCRIPT_DIR, CONFIG_FILE)
+config.exist_config()
 
-def exist_config() -> None:
-    if not os.path.exists(CONFIG_PATH):
-        print(f"Error: Configuration file '{CONFIG_PATH}' not found!")
-        print(f"Please config_sample.json to {CONFIG_FILE} and run again.")
-        print("command: ")
-        print(f"cp conf/config_sample.json {CONFIG_FILE}")
-        sys.exit(1)
+flask_config = config.data.get("flask")
 
-exist_config()
+webserver.run_webserver_thread(
+    http_port=flask_config.get("http_port", 0),
+    https_port=flask_config.get("https_port", 0)
+)
 
-
-
+from time import sleep
+while True:
+    sleep(1)
