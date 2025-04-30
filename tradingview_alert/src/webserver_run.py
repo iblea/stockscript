@@ -1,13 +1,15 @@
 
 import os
 import threading
-from werkzeug.serving import make_server
-
+from werkzeug.serving import make_server, WSGIRequestHandler
 import webserver_flask as flask_app
 
-from config import check_cert
+from config import check_cert, HTTPS_CERT_PATH, HTTPS_KEY_PATH
 
-from time import sleep
+
+# HTTP/1.1 사용하도록 설정
+WSGIRequestHandler.protocol_version = "HTTP/1.1"
+
 
 def run_http(port) -> None:
     http_server = make_server('0.0.0.0', port, flask_app.app)
@@ -19,13 +21,7 @@ def check_https() -> bool:
     return False
 
 def run_https(port) -> None:
-    cert_path = os.path.join(os.path.dirname(__file__), 'cert.pem')
-    key_path = os.path.join(os.path.dirname(__file__), 'key.pem')
-
-    if not os.path.exists(cert_path) or not os.path.exists(key_path):
-        raise FileNotFoundError("SSL 인증서와 키 파일이 필요합니다. cert.pem과 key.pem 파일을 생성해주세요.")
-
-    https_server = make_server('0.0.0.0', port, flask_app.app, ssl_context=(cert_path, key_path))
+    https_server = make_server('0.0.0.0', port, flask_app.app, ssl_context=(HTTPS_CERT_PATH, HTTPS_KEY_PATH))
     https_server.serve_forever()
 
 
