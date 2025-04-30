@@ -29,8 +29,8 @@ if [ -z "$proc" ]; then
     if [ -x $BOT_PATH ]; then
         cd "$curpath"
         export PYTHONUNBUFFERED=1
-        echo -n "" > output.log
         $BOT_PATH --daemon
+        # echo -n "" > output.log
         # nohup $BOT_PATH >> output.log 2>&1 &
         # $BOT_PATH
     fi
