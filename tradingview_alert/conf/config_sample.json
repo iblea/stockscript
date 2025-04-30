@@ -6,8 +6,8 @@
         "koreainvestment": ""
     },
     "flask": {
-        "http_port": 13021,
-        "https_port": 13022
+        "http_port": 8842,
+        "https_port": 8843
     },
     "bot": {
         "use_discord": true,
