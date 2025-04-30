@@ -1,3 +1,7 @@
 conf/config.json
 
 tradingview_alert/
+cert/**
+
+__pycache__/
+**/__pycache__/
