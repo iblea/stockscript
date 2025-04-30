@@ -75,6 +75,12 @@ if __name__ == "__main__":
             pidfile=daemon.pidfile.PIDLockFile(args.pidfile),
             stdout=log_file,
             stderr=log_file,
+            # 기본 파일 핸들러 보존
+            files_preserve=[log_file],
+            # 데몬 모드에서도 표준 입력 유지 (SSL이 종종 필요로 함)
+            stdin=sys.stdin,
+            # 자식 프로세스로 분리 후 부모 프로세스 종료
+            detach_process=True,
         )
 
         # 시그널 핸들러 설정
@@ -85,6 +91,9 @@ if __name__ == "__main__":
 
         # 데몬으로 실행
         with context:
+            # 데몬 모드에서 Discord 연결 전 약간의 지연 시간 추가
+            import time
+            time.sleep(1)  # 시스템 리소스 초기화를 위한 시간
             main()
     else:
         main()
