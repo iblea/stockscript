@@ -1,0 +1,9 @@
+{
+    "trade": "NQ!1",
+
+    "rest_api": {
+        "use": "kiwoom",
+        "kiwoom": "",
+        "koreainvestment": ""
+    }
+}

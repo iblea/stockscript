@@ -1,0 +1,6 @@
+
+MAIN_SCRIPT="src/main.py"
+VENV_NAME="tradingview_alert"
+# pip3 freeze > requirements_freeze.txt
+FREEZE_PATH="requirements_freeze.txt"
+MODULE_INTEGRITY=0
