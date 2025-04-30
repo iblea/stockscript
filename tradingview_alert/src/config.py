@@ -105,9 +105,9 @@ def check_config() -> bool:
         print("Error: config.json에 bot.use_telegram 설정이 없습니다.")
         return False
 
-    discord_data = bot_data.get("discord", None)
+    discord_data = data.get("discord", None)
     if discord_data is None:
-        print("Error: config.json에 bot.discord 설정이 없습니다.")
+        print("Error: config.json에 discord 설정이 없습니다.")
         return False
 
     obj = discord_data.get("token", None)
@@ -130,9 +130,9 @@ def check_config() -> bool:
         print("Error: config.json에 bot.discord.alert_interval 설정이 없습니다.")
         return False
 
-    telegram_data = bot_data.get("telegram", None)
+    telegram_data = data.get("telegram", None)
     if telegram_data is None:
-        print("Error: config.json에 bot.telegram 설정이 없습니다.")
+        print("Error: config.json에 telegram 설정이 없습니다.")
         return False
 
     obj = telegram_data.get("token", None)
