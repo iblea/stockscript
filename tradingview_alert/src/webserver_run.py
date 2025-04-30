@@ -25,7 +25,7 @@ def run_https(port) -> None:
     https_server.serve_forever()
 
 
-def run_webserver_thread(http_port: int = 5001, https_port: int = 5002) -> None:
+def run_webserver_thread(http_port: int = 8842, https_port: int = 8843) -> None:
 
     if http_port == 0 and https_port == 0:
         print("web server가 실행되지 않습니다.")
