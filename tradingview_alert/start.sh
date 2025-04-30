@@ -81,7 +81,7 @@ fi
 # $VENV_NAME/bin/pip3 install discord
 
 # echo "venv activate"
-$VENV_NAME/bin/python "$MAIN_SCRIPT"
+$VENV_NAME/bin/python "$MAIN_SCRIPT" $@
 
 # if [ $(command -v deactivate) != "" ]; then
 deactivate
