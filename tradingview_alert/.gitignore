@@ -1,6 +1,7 @@
 conf/config.json
 
 cert/**
+data/**
 output.log
 
 tradingview_alert/
