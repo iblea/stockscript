@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
 from werkzeug.serving import WSGIRequestHandler
 
-from msg import msg_queue
-
+# from msg import msg_queue, safe_string
+from msg import safe_string
+from futures import future_alert_1, get_data_hdd, set_data_hdd
 
 app = Flask(__name__)
 
@@ -17,25 +18,44 @@ def index():
     return jsonify({"message": "Hello, World!"})
 
 
+@app.route('/tradingview/chk', methods=['GET'])
+def tradingview_check():
+    # global msg_queue
+    global safe_string
+
+    safe_string.set_value("")
+
+    # 성공 응답
+    return jsonify({
+        "status": "success",
+    }), 200
+
+
 @app.route('/tradingview/alert', methods=['POST'])
 def tradingview_alert():
-    global msg_queue
+    # global msg_queue
+    global safe_string
     # POST 요청의 JSON 데이터 가져오기
     data = request.get_json()
 
     if not data:
         return jsonify({"error": "데이터가 없습니다"}), 400
 
-    # 여기서 받은 데이터 처리
-    # print("받은 데이터:", data)
+    message: str = future_alert_1(data)
+    print(message)
+    safe_string.append(message)
 
-    stat = msg_queue.push(str(data))
-    if not stat:
-        print("Error: msg_queue.push()")
-        return jsonify({"error": "메시지 전달 실패"}), 500
+    # stat = msg_queue.push(message)
+    # if not stat:
+    #     print("Error: msg_queue.push()")
+    #     return jsonify({"error": "메시지 전달 실패"}), 500
 
     # 성공 응답
     return jsonify({
-        "status": "success",
-        "received_data": data
+        "status": "success"
     }), 200
+
+    # return jsonify({
+    #     "status": "success",
+    #     "received_data": data
+    # }), 200
