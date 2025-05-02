@@ -145,17 +145,15 @@ class DiscordBot(discord.Client):
         if self.is_closing:
             return
 
-
-        if msg.msg_queue.is_empty() is False:
-            msg_data = ""
-            while True:
-                tmp = msg.msg_queue.pop()
-                if tmp is None:
-                    break
-                msg_data += tmp
-            if msg_data != "":
-                msg.safe_string.append(msg_data)
-
+        # if msg.msg_queue.is_empty() is False:
+        #     msg_data = ""
+        #     while True:
+        #         tmp = msg.msg_queue.pop()
+        #         if tmp is None:
+        #             break
+        #         msg_data += tmp
+        #     if msg_data != "":
+        #         msg.safe_string.append(msg_data)
 
         current_time = time()
         # self.alert_interval 초마다 메시지 전송
