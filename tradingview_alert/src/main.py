@@ -8,7 +8,7 @@ import argparse
 import os
 
 from discord_bot import discord_bot_run, discord_bot_shutdown
-from telegram_bot import start_telegram_bot
+from telegram_bot import start_telegram_bot, telegram_bot_shutdown
 
 # pip install python-daemon
 # import daemon
@@ -55,6 +55,7 @@ def main():
 
     # 안전한 종료 수행
     discord_bot_shutdown()
+    telegram_bot_shutdown()
     # 웹서버 종료 코드가 필요하다면 여기에 추가
 
     print("shutdown done")
