@@ -35,14 +35,58 @@ def tradingview_check():
 def tradingview_alert():
     # global msg_queue
     global safe_string
-    # POST 요청의 JSON 데이터 가져오기
-    data = request.get_json()
 
-    if not data:
-        return jsonify({"error": "데이터가 없습니다"}), 400
+    content_type = request.headers.get('Content-Type')
+    print(content_type)
 
-    message: str = future_alert_1(data)
-    print(message)
+    data: dict|None = None
+    raw_data: str = ""
+    message: str = ""
+
+    try:
+        raw_data = request.get_data(as_text=True, parse_form_data=False)
+    except Exception as e:
+        print("Error: request.get_data()")
+        print(e)
+        message = "Error: request.get_data()\n" + str(e) + "\n"
+        try:
+            raw_data = request.data.decode()
+        except Exception as e:
+            print("Error: request.data.decode()")
+            print(e)
+            message = "Error: request.data.decode()\n" + str(e) + "\n"
+            raw_data = "None"
+
+    if content_type == 'application/json':
+        # JSON 데이터 가져오기
+        try:
+            data = request.get_json()
+        except Exception as e:
+            raw_data = request.data.decode()
+            print("Error: JSON Decode Error")
+            print(e)
+            message = "Error: JSON Decode Error, " + str(e) + "\n" + raw_data
+            data = None
+
+        if data is None:
+            print("Error: data is None")
+            message = "Error: data is None\n" + raw_data
+
+        message: str = future_alert_1(data)
+    else:
+        # JSON 데이터가 아닌 경우, raw 데이터 가져오기
+        print(f"This is not JSON content type. [{content_type}]")
+        message = raw_data
+        # print(f"raw_data: '{raw_data}'")
+
+    # print(f"message: '{message}'")
+    if message is None or len(message) == 0:
+        print("Error: Wrong message! (None or empty)")
+        return jsonify({
+            "status": "error",
+            "message": "메시지 내용이 없습니다."
+        }), 400
+
     safe_string.append(message)
 
     # stat = msg_queue.push(message)
