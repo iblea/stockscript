@@ -57,7 +57,7 @@ def tradingview_alert():
             message = "Error: request.data.decode()\n" + str(e) + "\n"
             raw_data = "None"
 
-    if content_type == 'application/json':
+    if content_type.startswith('application/json'):
         # JSON 데이터 가져오기
         try:
             data = request.get_json()
