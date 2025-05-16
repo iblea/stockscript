@@ -1,0 +1,6 @@
+
+conf/key.conf
+
+data/**
+!data/.gitkeep
+

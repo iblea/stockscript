@@ -1,0 +1,6 @@
+
+# 앱 키 입력
+APP_KEY="YOUR_APP_KEY"
+
+# 앱 시크릿 입력
+APP_SECRET="YOUR_SECRET_KEY"
