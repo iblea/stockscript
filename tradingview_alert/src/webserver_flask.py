@@ -18,6 +18,34 @@ def index():
     return jsonify({"message": "Hello, World!"})
 
 
+@app.route('/tradingview/stock_data', methods=['POST'])
+def tradingview_stock_data():
+
+    json_data = None
+    content_type = request.headers.get('Content-Type')
+    print(content_type)
+
+    try:
+        json_data= request.get_json()
+        print(json_data)
+    except Exception as e:
+        print("Error: request.get_data()")
+        print(e)
+        json_data = None
+
+    if json_data is None:
+        print("Error: json_data is None")
+        return jsonify({
+            "status": "error",
+            "message": "json_data is None"
+        }), 400
+
+    return jsonify({
+        "status": "success",
+        "message": "Stock data received successfully."
+    }), 200
+
+
 @app.route('/tradingview/chk', methods=['GET'])
 def tradingview_check():
     # global msg_queue
