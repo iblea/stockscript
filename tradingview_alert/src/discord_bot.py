@@ -264,8 +264,8 @@ async def check_message(interaction: discord.Interaction) -> None:
     await interaction.response.send_message("alert check")
 
 async def print_stock(interaction: discord.Interaction, ticker: str) -> None:
-    stock_data_str = stock_data.get_stockdata_string(ticker)
-    await interaction.response.send_message(stock_data_str.lower())
+    stock_data_str = stock_data.get_stockdata_string(ticker.lower())
+    await interaction.response.send_message(stock_data_str)
 
 
 

@@ -198,7 +198,7 @@ def get_stockdata_string(ticker: str) -> str:
     if ticker in stock_data_dict:
         return str(stock_data_dict[ticker])
     else:
-        return ""
+        return "no stock data in ticker: " + ticker
 
 def get_all_stockdata_string() -> str:
     global stock_data_dict
