@@ -5,6 +5,10 @@ from werkzeug.serving import WSGIRequestHandler
 from msg import safe_string
 from futures import future_alert_1, get_data_hdd, set_data_hdd
 
+from stock_data import save_stockdata_in_memory
+
+import json
+
 app = Flask(__name__)
 
 # favicon 요청 무시
@@ -26,7 +30,14 @@ def tradingview_stock_data():
     print(content_type)
 
     try:
-        json_data= request.get_json()
+        if content_type.startswith('application/json'):
+            # JSON 데이터 가져오기
+            json_data = request.get_json(force=True)
+        else:
+            # JSON 데이터가 아닌 경우, raw 데이터 가져오기
+            print(f"This is not JSON content type. [{content_type}]")
+            json_data = request.get_data(as_text=True, parse_form_data=False)
+            json_data = json.loads(json_data)
         print(json_data)
     except Exception as e:
         print("Error: request.get_data()")
@@ -40,6 +51,7 @@ def tradingview_stock_data():
             "message": "json_data is None"
         }), 400
 
+    save_stockdata_in_memory(json_data)
     return jsonify({
         "status": "success",
         "message": "Stock data received successfully."

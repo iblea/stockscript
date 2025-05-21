@@ -9,6 +9,7 @@ import os
 
 from discord_bot import discord_bot_run, discord_bot_shutdown
 from telegram_bot import start_telegram_bot, telegram_bot_shutdown
+from stock_data import save_stockdata_in_disk, load_stockdata_from_disk
 
 # pip install python-daemon
 # import daemon
@@ -38,6 +39,7 @@ signal.signal(signal.SIGTERM, signal_handler)  # kill 명령어
 
 def main():
     config.exist_config()
+    load_stockdata_from_disk()
 
     flask_config = config.data.get("flask")
 
@@ -47,13 +49,13 @@ def main():
     )
 
     discord_bot_run(config.data)
-
     start_telegram_bot(config.data)
 
     # 시그널 발생 전까지 대기
     signal.pause()
 
     # 안전한 종료 수행
+    save_stockdata_in_disk()
     discord_bot_shutdown()
     telegram_bot_shutdown()
     # 웹서버 종료 코드가 필요하다면 여기에 추가

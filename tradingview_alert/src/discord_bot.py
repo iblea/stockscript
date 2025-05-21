@@ -10,6 +10,7 @@ import threading
 from time import time
 
 import msg
+import stock_data
 
 
 client = None
@@ -101,9 +102,17 @@ class DiscordBot(discord.Client):
             print("chk command")
             await check_message(interaction)
 
+        @self.tree.command()
         async def check(interaction: discord.Interaction):
             print("chk command")
             await check_message(interaction)
+
+        @self.tree.command()
+        async def stock(interaction: discord.Interaction, ticker: str = ""):
+            print("stock command")
+            await print_stock(interaction, ticker)
+
+
 
 
     async def safe_shutdown(self):
@@ -254,6 +263,9 @@ async def check_message(interaction: discord.Interaction) -> None:
     msg.safe_string.set_value("")
     await interaction.response.send_message("alert check")
 
+async def print_stock(interaction: discord.Interaction, ticker: str) -> None:
+    stock_data_str = stock_data.get_stockdata_string(ticker)
+    await interaction.response.send_message(stock_data_str.lower())
 
 
 

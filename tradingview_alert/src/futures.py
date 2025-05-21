@@ -2,6 +2,8 @@ import os
 from typing import List
 import json
 
+from config import DATA_DIR
+
 
 POS_ERROR = 0
 # 주문 포지션 (진입)
@@ -15,9 +17,8 @@ TYPE_LONG = 1
 # 주문 타입 (숏)
 TYPE_SHORT = 2
 
-SCRIPT_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/data/"
 DATA_FILE: str = "data.json"
-DATA_FULL_PATH: str = os.path.join(SCRIPT_DIR, DATA_FILE)
+DATA_FULL_PATH: str = os.path.join(DATA_DIR, DATA_FILE)
 
 
 def get_data_hdd() -> dict:

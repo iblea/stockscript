@@ -4,8 +4,13 @@ import json
 
 
 SCRIPT_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CONFIG_FILE: str = "conf/config.json"
-CONFIG_PATH: str = os.path.join(SCRIPT_DIR, CONFIG_FILE)
+DATA_DIR: str   = SCRIPT_DIR + "/data/"
+
+CONFIG_FILE: str = "/conf/config.json"
+CONFIG_PATH: str = SCRIPT_DIR + CONFIG_FILE
+
+# CONFIG_FILE: str = "conf/config.json"
+# CONFIG_PATH: str = os.path.join(SCRIPT_DIR, CONFIG_FILE)
 
 HTTPS_CERT_FILE: str = "cert/server.crt"
 HTTPS_KEY_FILE: str = "cert/server.key"
