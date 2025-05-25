@@ -1,0 +1,33 @@
+
+:: 매일 6시 30분에 재부팅하는 스케쥴러
+
+:: 추가
+:: schtasks /create /tn "DailyReboot630AM" /tr "shutdown /r /f /t 30 /c \"Scheduled daily reboot at 6:30AM\"" /sc daily /st 06:30 /ru SYSTEM /rl HIGHEST
+
+:: 조회
+schtasks /query /tn "DailyReboot630AM"
+:: 상세 조회
+:: schtasks /query /tn "DailyReboot630AM" /fo list /v
+
+:: 스케쥴러 비활성화
+:: schtasks /change /tn "DailyReboot630AM" /disable
+:: 스케쥴러 활성화
+:: schtasks /change /tn "DailyReboot630AM" /enable
+
+:: 삭제
+:: schtasks /delete /tn "DailyReboot630AM" /f
+
+
+
+:: 매 1분마다 (완전 숨김 모드)
+:: background_hidden.vbs 경로는 알아서 수정
+:: background_hidden.vbs 스크립트의 background.ps1 스크립트 경로도 수정해줘야 함.
+:: schtasks /create /tn "StartKiwoomApi" /tr "wscript.exe //nologo C:\background_hidden.vbs" /sc minute /mo 1 /ru SYSTEM /rl HIGHEST /f
+
+schtasks /query /tn "StartKiwoomApi"
+:: schtasks /query /tn "StartKiwoomApi" /fo list /v
+
+:: schtasks /change /tn "StartKiwoomApi" /disable
+:: schtasks /change /tn "StartKiwoomApi" /enable
+
+:: schtasks /delete /tn "StartKiwoomApi" /f
