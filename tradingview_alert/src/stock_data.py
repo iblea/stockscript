@@ -1,11 +1,19 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from config import DATA_DIR
 
 from os.path import exists, getmtime
 
 STOCK_DATA_PATH = DATA_DIR + "stock_data.json"
 TICK_DATA_PATH = DATA_DIR + "tick.json"
+
+
+def utc_to_kst(utc_time: datetime) -> datetime:
+    """UTC 시간을 KST(한국 시간)로 변환 (+9시간)"""
+    if utc_time == datetime.min:
+        return utc_time
+    return utc_time + timedelta(hours=9)
+
 
 class StockPrice:
     open: float = 0.0
@@ -134,8 +142,8 @@ class StockData:
 
         ret = f"ticker: \"{self.ticker}\" [{self.exchange}]\n"
         ret += f"price: {self.getPrice()}\n"
-        ret += f"candle time: {self.time.strftime('%Y-%m%d %H:%M:%S')}\n"
-        ret += f"now: {self.timenow.strftime('%Y-%m%d %H:%M:%S')}\n"
+        ret += f"candle time: {utc_to_kst(self.time).strftime('%Y-%m-%d %H:%M:%S')} KST\n"
+        ret += f"now: {utc_to_kst(self.timenow).strftime('%Y-%m-%d %H:%M:%S')} KST\n"
         ret += "```\n"
         ret += f"  - close: {self.data.getClose()}\n"
         ret += f"  - open : {self.data.getOpen()}\n"
@@ -260,7 +268,7 @@ def get_all_stockdata_string() -> str:
         data = stock_data_dict[ticker]
         string += "ticker: " + data.ticker + "\n"
         string += "price: " + str(data.getPrice()) + "\n"
-        string += "time: " + str(data.time) + "\n"
+        string += "time: " + utc_to_kst(data.time).strftime('%Y-%m-%d %H:%M:%S') + " KST\n"
 
         # alert 정보 확인
         ticker_lower = ticker.lower()

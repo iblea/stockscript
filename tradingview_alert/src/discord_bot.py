@@ -8,6 +8,7 @@ import asyncio
 import threading
 
 from time import time
+from datetime import datetime
 
 import msg
 import stock_data
@@ -41,6 +42,7 @@ class DiscordBot(discord.Client):
     realtime_channel: Optional[discord.TextChannel] = None  # realtime 채널 객체
     next_realtime_update_time: int = 0  # realtime 업데이트 시간
     last_realtime_message_id: Optional[int] = None  # 마지막 realtime 메시지 ID
+    last_realtime_update_minute: int = -1  # 마지막으로 업데이트한 분 (0~59)
 
     def __init__(self,
             config: dict,
@@ -251,10 +253,13 @@ class DiscordBot(discord.Client):
             self.next_tick_check_time = current_time + 60  # 다음 체크 시간 설정 (60초 후)
             stock_data.check_and_reload_tick_data()
 
-        # 1분(60초)마다 realtime 채널 업데이트 (채널이 설정된 경우에만)
-        if self.realtime_show_channel_id > 0 and current_time >= self.next_realtime_update_time:
-            self.next_realtime_update_time = current_time + 60  # 다음 업데이트 시간 설정 (60초 후)
-            await self.update_realtime_channel()
+        # 매분 10초 이후에 단 한 번 realtime 채널 업데이트 (채널이 설정된 경우에만)
+        if self.realtime_show_channel_id > 0:
+            now = datetime.now()
+            # 현재 초가 10초 이상이고, 현재 분이 마지막 업데이트 분과 다르면 실행
+            if now.second >= 10 and now.minute != self.last_realtime_update_minute:
+                self.last_realtime_update_minute = now.minute
+                await self.update_realtime_channel()
 
         # self.alert_interval 초마다 메시지 전송
         if current_time >= self.next_alert_time or self.alert_interval < 0:

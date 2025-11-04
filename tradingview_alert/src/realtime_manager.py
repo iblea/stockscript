@@ -69,7 +69,7 @@ def get_realtime_message() -> str:
         # Markdown 헤더로 티커명 표시
         msg += f"## {ticker.upper()}\n"
         msg += f"**{current_price}**\n"
-        msg += f"time: {stock.time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        msg += f"time: {stock_data.utc_to_kst(stock.time).strftime('%Y-%m-%d %H:%M:%S')} KST\n"
 
         # alert 정보 확인
         if ticker in alert_manager.alert_data:
