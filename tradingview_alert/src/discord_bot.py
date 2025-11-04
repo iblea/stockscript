@@ -11,6 +11,7 @@ from time import time
 
 import msg
 import stock_data
+import alert_manager
 
 
 client = None
@@ -112,6 +113,21 @@ class DiscordBot(discord.Client):
             print("stock command")
             await print_stock(interaction, ticker)
 
+        @self.tree.command()
+        async def alert(interaction: discord.Interaction, ticker: str, target_price: str, stop_loss: str):
+            print("alert command")
+            await set_alert(interaction, ticker, target_price, stop_loss)
+
+        @self.tree.command()
+        async def chka(interaction: discord.Interaction):
+            print("chka command")
+            await check_alert(interaction)
+
+        @self.tree.command()
+        async def adel(interaction: discord.Interaction, ticker: str):
+            print("adel command")
+            await delete_alert(interaction, ticker)
+
 
 
 
@@ -164,6 +180,9 @@ class DiscordBot(discord.Client):
         #     if msg_data != "":
         #         msg.safe_string.append(msg_data)
 
+        # alert 확인
+        alert_manager.check_alerts()
+
         current_time = time()
         # self.alert_interval 초마다 메시지 전송
         if current_time >= self.next_alert_time or self.alert_interval < 0:
@@ -178,6 +197,15 @@ class DiscordBot(discord.Client):
 
             # SafeString에서 현재 메시지 읽기 (Read Lock 사용)
             message = msg.safe_string.get_value()
+
+            # alert 메시지 추가
+            alert_message = alert_manager.get_alert_message()
+            if alert_message:
+                if message:
+                    message += "\n" + alert_message
+                else:
+                    message = alert_message
+
             if message is None or message == "":
                 return
 
@@ -267,6 +295,17 @@ async def print_stock(interaction: discord.Interaction, ticker: str) -> None:
     stock_data_str = stock_data.get_stockdata_string(ticker.lower())
     await interaction.response.send_message(stock_data_str)
 
+async def set_alert(interaction: discord.Interaction, ticker: str, target_price: str, stop_loss: str) -> None:
+    success, message = alert_manager.set_alert(ticker, target_price, stop_loss)
+    await interaction.response.send_message(message)
+
+async def check_alert(interaction: discord.Interaction) -> None:
+    message = alert_manager.clear_triggered_alerts()
+    await interaction.response.send_message(message)
+
+async def delete_alert(interaction: discord.Interaction, ticker: str) -> None:
+    success, message = alert_manager.delete_alert(ticker)
+    await interaction.response.send_message(message)
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ from time import sleep
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 import msg
+import alert_manager
 
 tg_bot: any = None
 tg_chatid: any = None
@@ -42,6 +43,12 @@ async def handle_chk_command(update, context):
     msg.safe_string.set_value("")
     await update.message.reply_text("alert check")
 
+
+async def handle_chka_command(update, context):
+    # chka 명령 처리
+    message = alert_manager.clear_triggered_alerts()
+    await update.message.reply_text(message)
+
 # async def handle_message(update, context):
 #     # 메시지 처리
 #     message_text = update.message.text.lower()
@@ -72,6 +79,9 @@ def telegram_bot_thread():
 
         # 종료 신호가 올 때까지 실행
         while not tg_stop_event.is_set():
+            # alert 확인
+            alert_manager.check_alerts()
+
             # 현재 시간
             current_time = asyncio.get_event_loop().time()
 
@@ -81,6 +91,15 @@ def telegram_bot_thread():
 
                 # 전송할 메시지 확인
                 msgdata = msg.safe_string.get_value()
+
+                # alert 메시지 추가
+                alert_message = alert_manager.get_alert_message()
+                if alert_message:
+                    if msgdata:
+                        msgdata += "\n" + alert_message
+                    else:
+                        msgdata = alert_message
+
                 if msgdata and msgdata != "":
                     await telegram_msg_send(msgdata)
 
@@ -132,6 +151,7 @@ def start_telegram_bot(config: dict):
 
     # 명령어 처리기 등록
     tg_bot.add_handler(CommandHandler("chk", handle_chk_command))
+    tg_bot.add_handler(CommandHandler("chka", handle_chka_command))
 
     print("텔레그램 봇을 시작합니다")
 
