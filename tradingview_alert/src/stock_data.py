@@ -2,9 +2,10 @@ import json
 from datetime import datetime
 from config import DATA_DIR
 
-from os.path import exists
+from os.path import exists, getmtime
 
 STOCK_DATA_PATH = DATA_DIR + "stock_data.json"
+TICK_DATA_PATH = DATA_DIR + "tick.json"
 
 class StockPrice:
     open: float = 0.0
@@ -129,6 +130,8 @@ class StockData:
         return self.data.getPrice()
 
     def returnString(self) -> str:
+        import alert_manager
+
         ret = f"ticker: \"{self.ticker}\" [{self.exchange}]\n"
         ret += f"price: {self.getPrice()}\n"
         ret += f"candle time: {self.time.strftime("%Y-%m%d %H:%M:%S")}\n"
@@ -141,7 +144,45 @@ class StockData:
         ret += f"  - volume: {self.data.getVolume()}\n"
         ret += "```\n"
         ret += f"interval: {self.interval}\n"
-        ret += f"currency type: \"{self.current}\", base: \"{self.base}\""
+        ret += f"currency type: \"{self.current}\", base: \"{self.base}\"\n"
+
+        # alert 정보 확인
+        ticker_lower = self.ticker.lower()
+        if ticker_lower in alert_manager.alert_data:
+            alert_info = alert_manager.alert_data[ticker_lower]
+            purchased_price = alert_info.get("purchased_price")
+            purchased_quantity = alert_info.get("purchased_quantity")
+            target_price = alert_info.get("target_price")
+            stop_loss_price = alert_info.get("stop_loss_price")
+
+            # purchased 정보가 있는 경우에만 표시
+            if purchased_price is not None and purchased_quantity is not None:
+                ret += "```\n"
+                ret += f"purchased: {purchased_price} (x {purchased_quantity})\n"
+
+                if target_price is not None:
+                    ret += f"target   : {target_price}\n"
+                else:
+                    ret += f"target   : -\n"
+
+                if stop_loss_price is not None:
+                    ret += f"stoploss : {stop_loss_price}\n"
+                else:
+                    ret += f"stoploss : -\n"
+
+                # 손익 계산
+                current_price = self.getPrice()
+                usd_profit, krw_profit = calculate_profit(self.ticker, purchased_price, purchased_quantity, current_price)
+
+                if usd_profit is not None and krw_profit is not None:
+                    ret += f"usd      : {usd_profit:,.2f}\n"
+                    ret += f"krw      : {krw_profit:,.0f}\n"
+                else:
+                    ret += f"usd      : null\n"
+                    ret += f"krw      : null\n"
+
+                ret += "```"
+
         return ret
 
     def __repr__(self):
@@ -161,6 +202,8 @@ class StockData:
 
 
 stock_data_dict: dict[str, StockData] = {}
+tick_data_dict: dict = {}
+tick_last_load_time: float = 0.0  # tick.json 마지막 로드 시간
 
 """
 {'type': 'alert', 'time': '2025-05-16T10:20:30Z', 'timenow': '2025-05-16T10:21:05Z', 'ticker': 'ES1!', 'exchange': 'CME_MINI', 'interval': ' 30S', 'data': {'open': '5947.25', 'close': '5947.25', 'low': '5947', 'high': '5947.25', 'volume': '130'}, 'current': 'USD', 'base': ''}
@@ -202,6 +245,7 @@ def get_stockdata_string(ticker: str) -> str:
 
 def get_all_stockdata_string() -> str:
     global stock_data_dict
+    import alert_manager
 
     if not stock_data_dict:
         return "no stock data"
@@ -211,7 +255,28 @@ def get_all_stockdata_string() -> str:
         data = stock_data_dict[ticker]
         string += "ticker: " + data.ticker + "\n"
         string += "price: " + str(data.getPrice()) + "\n"
-        string += "time: " + str(data.time) + "\n\n"
+        string += "time: " + str(data.time) + "\n"
+
+        # alert 정보 확인
+        ticker_lower = ticker.lower()
+        if ticker_lower in alert_manager.alert_data:
+            alert_info = alert_manager.alert_data[ticker_lower]
+            purchased_price = alert_info.get("purchased_price")
+            purchased_quantity = alert_info.get("purchased_quantity")
+
+            if purchased_price is not None and purchased_quantity is not None:
+                # 손익 계산
+                current_price = data.getPrice()
+                usd_profit, krw_profit = calculate_profit(ticker, purchased_price, purchased_quantity, current_price)
+
+                string += f"purchased: {purchased_price} (x {purchased_quantity})"
+
+                if usd_profit is not None and krw_profit is not None:
+                    string += f" {{ usd: {usd_profit:,.2f}, krw: {krw_profit:,.0f} }}"
+
+                string += "\n"
+
+        string += "\n"
 
     return string
 
@@ -252,3 +317,76 @@ def load_stockdata_from_disk() -> bool:
         stock_data_dict[ticker] = StockData.setDict(data)
 
     return True
+
+
+def load_tickdata_from_disk() -> bool:
+    global tick_data_dict, tick_last_load_time
+    import time
+
+    if not exists(TICK_DATA_PATH):
+        print(f"Tick file not found: {TICK_DATA_PATH}")
+        return False
+
+    try:
+        with open(TICK_DATA_PATH, 'r') as f:
+            tick_data_dict = json.load(f)
+        tick_last_load_time = time.time()  # 로드 시간 기록
+        return True
+    except Exception as e:
+        print(f"Error loading tick data: {e}")
+        return False
+
+
+def check_and_reload_tick_data() -> bool:
+    """
+    tick.json 파일의 수정 시간을 체크하고 필요하면 재로드
+    Returns: 재로드 여부
+    """
+    global tick_last_load_time
+
+    if not exists(TICK_DATA_PATH):
+        return False
+
+    try:
+        # 파일의 마지막 수정 시간
+        file_mtime = getmtime(TICK_DATA_PATH)
+
+        # 마지막 로드 시간보다 파일이 더 최근에 수정되었으면 재로드
+        if file_mtime > tick_last_load_time:
+            print(f"Tick data file has been modified. Reloading...")
+            return load_tickdata_from_disk()
+
+        return False
+    except Exception as e:
+        print(f"Error checking tick data file: {e}")
+        return False
+
+
+def calculate_profit(ticker: str, purchased_price: float, purchased_quantity: float, current_price: float) -> tuple[float | None, float | None]:
+    """
+    손익 계산
+    Returns: (usd 수익, krw 수익)
+    """
+    global tick_data_dict
+
+    ticker = ticker.lower()
+
+    # tick_data에 티커 정보가 없으면 None 반환
+    if ticker not in tick_data_dict:
+        return None, None
+
+    tick_info = tick_data_dict[ticker]
+    tickrate = tick_info.get("tick", 0)
+    usd_per_tick = tick_info.get("usd", 0)
+    krw_per_tick = tick_info.get("krw", 0)
+
+    if tickrate == 0:
+        return None, None
+
+    # 손익 계산: ((현재가 - 구매가) / tickrate) * 구매수량 * (usd or krw)
+    price_diff = current_price - purchased_price
+    tick_count = price_diff / tickrate
+    total_profit_usd = tick_count * purchased_quantity * usd_per_tick
+    total_profit_krw = tick_count * purchased_quantity * krw_per_tick
+
+    return total_profit_usd, total_profit_krw

@@ -33,6 +33,8 @@ class DiscordBot(discord.Client):
     alert_channel: Optional[int] = None
     is_closing = False  # 봇 종료 상태 추적
 
+    next_tick_check_time: int = 0  # tick.json 체크 시간
+
     def __init__(self,
             config: dict,
             schedule_second: int = 3,
@@ -114,9 +116,16 @@ class DiscordBot(discord.Client):
             await print_stock(interaction, ticker)
 
         @self.tree.command()
-        async def alert(interaction: discord.Interaction, ticker: str, target_price: str, stop_loss: str):
+        async def alert(
+            interaction: discord.Interaction,
+            ticker: str,
+            target_price: str,
+            stop_loss: str,
+            purchased_price: str = "",
+            purchased_quantity: str = ""
+        ):
             print("alert command")
-            await set_alert(interaction, ticker, target_price, stop_loss)
+            await set_alert(interaction, ticker, target_price, stop_loss, purchased_price, purchased_quantity)
 
         @self.tree.command()
         async def chka(interaction: discord.Interaction):
@@ -184,6 +193,12 @@ class DiscordBot(discord.Client):
         alert_manager.check_alerts()
 
         current_time = time()
+
+        # 1분(60초)마다 tick.json 파일 체크 및 재로드
+        if current_time >= self.next_tick_check_time:
+            self.next_tick_check_time = current_time + 60  # 다음 체크 시간 설정 (60초 후)
+            stock_data.check_and_reload_tick_data()
+
         # self.alert_interval 초마다 메시지 전송
         if current_time >= self.next_alert_time or self.alert_interval < 0:
             self.next_alert_time = current_time + self.alert_interval
@@ -295,8 +310,15 @@ async def print_stock(interaction: discord.Interaction, ticker: str) -> None:
     stock_data_str = stock_data.get_stockdata_string(ticker.lower())
     await interaction.response.send_message(stock_data_str)
 
-async def set_alert(interaction: discord.Interaction, ticker: str, target_price: str, stop_loss: str) -> None:
-    success, message = alert_manager.set_alert(ticker, target_price, stop_loss)
+async def set_alert(
+    interaction: discord.Interaction,
+    ticker: str,
+    target_price: str,
+    stop_loss: str,
+    purchased_price: str = "",
+    purchased_quantity: str = ""
+) -> None:
+    success, message = alert_manager.set_alert(ticker, target_price, stop_loss, purchased_price, purchased_quantity)
     await interaction.response.send_message(message)
 
 async def check_alert(interaction: discord.Interaction) -> None:

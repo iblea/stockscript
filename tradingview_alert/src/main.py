@@ -9,7 +9,7 @@ import os
 
 from discord_bot import discord_bot_run, discord_bot_shutdown
 from telegram_bot import start_telegram_bot, telegram_bot_shutdown
-from stock_data import save_stockdata_in_disk, load_stockdata_from_disk
+from stock_data import save_stockdata_in_disk, load_stockdata_from_disk, load_tickdata_from_disk
 from alert_manager import load_alert_from_disk, save_alert_to_disk
 
 # pip install python-daemon
@@ -41,6 +41,7 @@ signal.signal(signal.SIGTERM, signal_handler)  # kill 명령어
 def main():
     config.exist_config()
     load_stockdata_from_disk()
+    load_tickdata_from_disk()
     load_alert_from_disk()
 
     flask_config = config.data.get("flask")

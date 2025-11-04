@@ -29,7 +29,7 @@ def validate_price(price_str: str) -> tuple[bool, float | None, str]:
         return False, None, "가격은 숫자 또는 '-'로 입력해야 합니다"
 
 
-def set_alert(ticker: str, target_price_str: str, stop_loss_str: str) -> tuple[bool, str]:
+def set_alert(ticker: str, target_price_str: str, stop_loss_str: str, purchased_price_str: str = "", purchased_quantity_str: str = "") -> tuple[bool, str]:
     """
     alert 설정
     Returns: (성공 여부, 메시지)
@@ -57,10 +57,42 @@ def set_alert(ticker: str, target_price_str: str, stop_loss_str: str) -> tuple[b
     if target_price is None and stop_loss is None:
         return False, "목표가와 손절가를 모두 '-'로 설정할 수 없습니다"
 
+    # 구매가격 및 구매수량 처리
+    purchased_price = None
+    purchased_quantity = None
+
+    if purchased_price_str and purchased_price_str.strip():
+        # 구매가격 검증
+        valid, purchased_price, error_msg = validate_price(purchased_price_str)
+        if not valid:
+            return False, f"구매가격 오류: {error_msg}"
+
+        # 구매가격이 None이면 (즉, '-'로 입력된 경우) 에러
+        if purchased_price is None:
+            return False, "구매가격은 '-'로 입력할 수 없습니다"
+
+        # 구매수량 처리
+        if purchased_quantity_str and purchased_quantity_str.strip():
+            try:
+                purchased_quantity = float(purchased_quantity_str)
+                if purchased_quantity <= 0:
+                    return False, "구매수량은 0보다 커야 합니다"
+            except ValueError:
+                return False, "구매수량은 숫자여야 합니다"
+        else:
+            # 구매가격만 입력된 경우, 구매수량은 1로 처리
+            purchased_quantity = 1.0
+
+    elif purchased_quantity_str and purchased_quantity_str.strip():
+        # 구매수량만 입력된 경우 에러
+        return False, "구매수량만 입력할 수 없습니다. 구매가격을 함께 입력해주세요."
+
     # alert 데이터 저장
     alert_data[ticker] = {
         "target_price": target_price,
-        "stop_loss_price": stop_loss
+        "stop_loss_price": stop_loss,
+        "purchased_price": purchased_price,
+        "purchased_quantity": purchased_quantity
     }
 
     # 파일에 저장
@@ -72,6 +104,9 @@ def set_alert(ticker: str, target_price_str: str, stop_loss_str: str) -> tuple[b
         msg += f"  목표가: {target_price}\n"
     if stop_loss is not None:
         msg += f"  손절가: {stop_loss}\n"
+    if purchased_price is not None:
+        msg += f"  구매가격: {purchased_price}\n"
+        msg += f"  구매수량: {purchased_quantity}\n"
 
     return True, msg
 
