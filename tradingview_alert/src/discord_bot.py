@@ -34,6 +34,7 @@ class DiscordBot(discord.Client):
     is_closing = False  # 봇 종료 상태 추적
 
     next_tick_check_time: int = 0  # tick.json 체크 시간
+    mention_id: int = 0  # alert 시 멘션할 사용자 ID
 
     def __init__(self,
             config: dict,
@@ -49,6 +50,7 @@ class DiscordBot(discord.Client):
         self.discord_response_chat_id = self.config.get("channel_id")
         self.alert_channel = None  # 초기에는 None으로 설정, on_ready 이벤트 후에 설정됨
         self.alert_interval = self.config.get("alert_interval", 5)
+        self.mention_id = self.config.get("mention_id", 0)
 
         self.schedule_second = schedule_second
 
@@ -215,7 +217,9 @@ class DiscordBot(discord.Client):
 
             # alert 메시지 추가
             alert_message = alert_manager.get_alert_message()
+            has_alert = False
             if alert_message:
+                has_alert = True
                 if message:
                     message += "\n" + alert_message
                 else:
@@ -226,8 +230,13 @@ class DiscordBot(discord.Client):
 
             if self.alert_interval < 0:
                 msg.safe_string.set_value("")
-            # 메시지 전송
-            await self.alert_channel.send(message)
+
+            # 메시지 전송 (alert가 있고 mention_id가 설정되어 있으면 멘션 추가)
+            if has_alert and self.mention_id > 0:
+                mention_text = f"<@{self.mention_id}> "
+                await self.alert_channel.send(mention_text + message)
+            else:
+                await self.alert_channel.send(message)
 
 
 

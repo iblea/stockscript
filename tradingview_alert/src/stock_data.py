@@ -266,9 +266,17 @@ def get_all_stockdata_string() -> str:
         ticker_lower = ticker.lower()
         if ticker_lower in alert_manager.alert_data:
             alert_info = alert_manager.alert_data[ticker_lower]
+            target_price = alert_info.get("target_price")
+            stop_loss_price = alert_info.get("stop_loss_price")
             purchased_price = alert_info.get("purchased_price")
             purchased_quantity = alert_info.get("purchased_quantity")
 
+            # target과 stoploss 정보 표시 (무조건)
+            target_str = str(target_price) if target_price is not None else "-"
+            stoploss_str = str(stop_loss_price) if stop_loss_price is not None else "-"
+            string += f"target: {target_str} / stoploss: {stoploss_str}\n"
+
+            # purchased 정보가 있으면 손익 표시
             if purchased_price is not None and purchased_quantity is not None:
                 # 손익 계산
                 current_price = data.getPrice()

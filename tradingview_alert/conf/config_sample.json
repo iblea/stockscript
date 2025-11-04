@@ -18,6 +18,8 @@
         "server_id": 0,
         "channel_id": 0,
         "alert_interval": 0
+		"mention_id": 0,
+		"realtime_show_channel_id": 0
     },
     "telegram": {
         "token": "",
