@@ -155,22 +155,27 @@ class StockData:
             target_price = alert_info.get("target_price")
             stop_loss_price = alert_info.get("stop_loss_price")
 
-            # purchased 정보가 있는 경우에만 표시
+            # alert 정보가 있으면 표시
+            ret += "```\n"
+
+            # purchased 정보 표시 (있는 경우에만)
             if purchased_price is not None and purchased_quantity is not None:
-                ret += "```\n"
                 ret += f"purchased: {purchased_price} (x {purchased_quantity})\n"
 
-                if target_price is not None:
-                    ret += f"target   : {target_price}\n"
-                else:
-                    ret += f"target   : -\n"
+            # target 정보 표시
+            if target_price is not None:
+                ret += f"target   : {target_price}\n"
+            else:
+                ret += f"target   : -\n"
 
-                if stop_loss_price is not None:
-                    ret += f"stoploss : {stop_loss_price}\n"
-                else:
-                    ret += f"stoploss : -\n"
+            # stoploss 정보 표시
+            if stop_loss_price is not None:
+                ret += f"stoploss : {stop_loss_price}\n"
+            else:
+                ret += f"stoploss : -\n"
 
-                # 손익 계산
+            # 손익 계산 (purchased 정보가 있는 경우에만)
+            if purchased_price is not None and purchased_quantity is not None:
                 current_price = self.getPrice()
                 usd_profit, krw_profit = calculate_profit(self.ticker, purchased_price, purchased_quantity, current_price)
 
@@ -181,7 +186,7 @@ class StockData:
                     ret += f"usd      : null\n"
                     ret += f"krw      : null\n"
 
-                ret += "```"
+            ret += "```"
 
         return ret
 
