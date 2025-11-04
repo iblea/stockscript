@@ -134,8 +134,8 @@ class StockData:
 
         ret = f"ticker: \"{self.ticker}\" [{self.exchange}]\n"
         ret += f"price: {self.getPrice()}\n"
-        ret += f"candle time: {self.time.strftime("%Y-%m%d %H:%M:%S")}\n"
-        ret += f"now: {self.timenow.strftime("%Y-%m%d %H:%M:%S")}\n"
+        ret += f"candle time: {self.time.strftime('%Y-%m%d %H:%M:%S')}\n"
+        ret += f"now: {self.timenow.strftime('%Y-%m%d %H:%M:%S')}\n"
         ret += "```\n"
         ret += f"  - close: {self.data.getClose()}\n"
         ret += f"  - open : {self.data.getOpen()}\n"

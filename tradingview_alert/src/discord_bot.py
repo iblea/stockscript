@@ -12,6 +12,7 @@ from time import time
 import msg
 import stock_data
 import alert_manager
+import realtime_manager
 
 
 client = None
@@ -36,6 +37,11 @@ class DiscordBot(discord.Client):
     next_tick_check_time: int = 0  # tick.json 체크 시간
     mention_id: int = 0  # alert 시 멘션할 사용자 ID
 
+    realtime_show_channel_id: int = 0  # realtime 표시 채널 ID
+    realtime_channel: Optional[discord.TextChannel] = None  # realtime 채널 객체
+    next_realtime_update_time: int = 0  # realtime 업데이트 시간
+    last_realtime_message_id: Optional[int] = None  # 마지막 realtime 메시지 ID
+
     def __init__(self,
             config: dict,
             schedule_second: int = 3,
@@ -50,7 +56,9 @@ class DiscordBot(discord.Client):
         self.discord_response_chat_id = self.config.get("channel_id")
         self.alert_channel = None  # 초기에는 None으로 설정, on_ready 이벤트 후에 설정됨
         self.alert_interval = self.config.get("alert_interval", 5)
-        self.mention_id = self.config.get("mention_id", 0)
+        self.mention_id = self.config.get("mention_id", 0) or 0  # None이면 0으로 처리
+        self.realtime_show_channel_id = self.config.get("realtime_show_channel_id", 0) or 0  # None이면 0으로 처리
+        self.realtime_channel = None
 
         self.schedule_second = schedule_second
 
@@ -92,6 +100,14 @@ class DiscordBot(discord.Client):
                 print(f"알림 채널이 설정되었습니다: {self.alert_channel.name}")
             else:
                 print(f"경고: 채널 ID {self.discord_response_chat_id}를 찾을 수 없습니다.")
+
+            # realtime 채널 설정
+            if self.realtime_show_channel_id > 0:
+                self.realtime_channel = self.get_channel(self.realtime_show_channel_id)
+                if self.realtime_channel:
+                    print(f"Realtime 채널이 설정되었습니다: {self.realtime_channel.name}")
+                else:
+                    print(f"경고: Realtime 채널 ID {self.realtime_show_channel_id}를 찾을 수 없습니다.")
 
             print('-----------------------------------')
             self.schedular.start()
@@ -139,7 +155,41 @@ class DiscordBot(discord.Client):
             print("adel command")
             await delete_alert(interaction, ticker)
 
+        @self.tree.command()
+        async def realtime(interaction: discord.Interaction, tickers: str = ""):
+            print("realtime command")
+            await set_realtime(interaction, tickers)
 
+
+    async def update_realtime_channel(self):
+        """realtime 채널에 메시지 업데이트"""
+        # realtime 채널이 설정되지 않았거나 티커가 없으면 스킵
+        if not self.realtime_channel or not realtime_manager.realtime_tickers:
+            return
+
+        # realtime 메시지 생성
+        message = realtime_manager.get_realtime_message()
+        if not message:
+            return
+
+        try:
+            # 마지막 메시지가 있으면 수정, 없으면 새로 생성
+            if self.last_realtime_message_id:
+                try:
+                    # 메시지 가져오기 및 수정
+                    old_message = await self.realtime_channel.fetch_message(self.last_realtime_message_id)
+                    await old_message.edit(content=message)
+                except discord.NotFound:
+                    # 메시지를 찾을 수 없으면 새로 생성
+                    new_message = await self.realtime_channel.send(message)
+                    self.last_realtime_message_id = new_message.id
+            else:
+                # 새 메시지 생성
+                new_message = await self.realtime_channel.send(message)
+                self.last_realtime_message_id = new_message.id
+
+        except Exception as e:
+            print(f"Realtime 채널 업데이트 오류: {e}")
 
 
     async def safe_shutdown(self):
@@ -201,6 +251,11 @@ class DiscordBot(discord.Client):
             self.next_tick_check_time = current_time + 60  # 다음 체크 시간 설정 (60초 후)
             stock_data.check_and_reload_tick_data()
 
+        # 1분(60초)마다 realtime 채널 업데이트 (채널이 설정된 경우에만)
+        if self.realtime_show_channel_id > 0 and current_time >= self.next_realtime_update_time:
+            self.next_realtime_update_time = current_time + 60  # 다음 업데이트 시간 설정 (60초 후)
+            await self.update_realtime_channel()
+
         # self.alert_interval 초마다 메시지 전송
         if current_time >= self.next_alert_time or self.alert_interval < 0:
             self.next_alert_time = current_time + self.alert_interval
@@ -231,8 +286,8 @@ class DiscordBot(discord.Client):
             if self.alert_interval < 0:
                 msg.safe_string.set_value("")
 
-            # 메시지 전송 (alert가 있고 mention_id가 설정되어 있으면 멘션 추가)
-            if has_alert and self.mention_id > 0:
+            # 메시지 전송 (alert가 있고 mention_id가 0이 아니면 멘션 추가)
+            if has_alert and self.mention_id is not None and self.mention_id > 0:
                 mention_text = f"<@{self.mention_id}> "
                 await self.alert_channel.send(mention_text + message)
             else:
@@ -336,6 +391,30 @@ async def check_alert(interaction: discord.Interaction) -> None:
 
 async def delete_alert(interaction: discord.Interaction, ticker: str) -> None:
     success, message = alert_manager.delete_alert(ticker)
+    await interaction.response.send_message(message)
+
+async def set_realtime(interaction: discord.Interaction, tickers: str) -> None:
+    """
+    /realtime 커맨드 핸들러
+    - /realtime : 모든 티커 표시
+    - /realtime ticker1 ticker2 ticker3 : 특정 티커 표시
+    - /realtime off : realtime 표시 비활성화
+    """
+    # 입력값 처리
+    tickers = tickers.strip()
+
+    if tickers == "":
+        # 모든 티커 표시
+        all_tickers = list(stock_data.stock_data_dict.keys())
+        success, message = realtime_manager.set_realtime_tickers(all_tickers)
+    elif tickers.lower() == "off":
+        # realtime 비활성화
+        success, message = realtime_manager.set_realtime_tickers([])
+    else:
+        # 특정 티커 표시
+        ticker_list = tickers.split()
+        success, message = realtime_manager.set_realtime_tickers(ticker_list)
+
     await interaction.response.send_message(message)
 
 
