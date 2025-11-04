@@ -108,6 +108,8 @@ class DiscordBot(discord.Client):
                 self.realtime_channel = self.get_channel(self.realtime_show_channel_id)
                 if self.realtime_channel:
                     print(f"Realtime 채널이 설정되었습니다: {self.realtime_channel.name}")
+                    # 채널에서 봇이 작성한 마지막 메시지 찾기
+                    await self.find_last_realtime_message()
                 else:
                     print(f"경고: Realtime 채널 ID {self.realtime_show_channel_id}를 찾을 수 없습니다.")
 
@@ -162,6 +164,24 @@ class DiscordBot(discord.Client):
             print("realtime command")
             await set_realtime(interaction, tickers)
 
+
+    async def find_last_realtime_message(self):
+        """realtime 채널에서 봇이 작성한 마지막 메시지 찾기"""
+        if not self.realtime_channel:
+            return
+
+        try:
+            # 최근 메시지 100개 확인 (충분한 범위)
+            async for message in self.realtime_channel.history(limit=100):
+                # 봇이 작성한 메시지인지 확인
+                if message.author.id == self.user.id:
+                    self.last_realtime_message_id = message.id
+                    print(f"기존 realtime 메시지를 찾았습니다: {message.id}")
+                    return
+
+            print("realtime 채널에 봇이 작성한 메시지가 없습니다.")
+        except Exception as e:
+            print(f"realtime 메시지 찾기 오류: {e}")
 
     async def update_realtime_channel(self):
         """realtime 채널에 메시지 업데이트"""
@@ -253,11 +273,11 @@ class DiscordBot(discord.Client):
             self.next_tick_check_time = current_time + 60  # 다음 체크 시간 설정 (60초 후)
             stock_data.check_and_reload_tick_data()
 
-        # 매분 10초 이후에 단 한 번 realtime 채널 업데이트 (채널이 설정된 경우에만)
+        # 매분 40초 이후에 단 한 번 realtime 채널 업데이트 (채널이 설정된 경우에만)
         if self.realtime_show_channel_id > 0:
             now = datetime.now()
-            # 현재 초가 10초 이상이고, 현재 분이 마지막 업데이트 분과 다르면 실행
-            if now.second >= 10 and now.minute != self.last_realtime_update_minute:
+            # 현재 초가 40초 이상이고, 현재 분이 마지막 업데이트 분과 다르면 실행
+            if now.second >= 40 and now.minute != self.last_realtime_update_minute:
                 self.last_realtime_update_minute = now.minute
                 await self.update_realtime_channel()
 
