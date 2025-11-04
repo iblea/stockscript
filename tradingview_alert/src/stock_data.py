@@ -362,7 +362,7 @@ def check_and_reload_tick_data() -> bool:
         return False
 
 
-def calculate_profit(ticker: str, purchased_price: float, purchased_quantity: float, current_price: float) -> tuple[float | None, float | None]:
+def calculate_profit(ticker: str, purchased_price: float, purchased_quantity: int, current_price: float) -> tuple[float | None, float | None]:
     """
     손익 계산
     Returns: (usd 수익, krw 수익)

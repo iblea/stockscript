@@ -74,14 +74,14 @@ def set_alert(ticker: str, target_price_str: str, stop_loss_str: str, purchased_
         # 구매수량 처리
         if purchased_quantity_str and purchased_quantity_str.strip():
             try:
-                purchased_quantity = float(purchased_quantity_str)
+                purchased_quantity = int(purchased_quantity_str)
                 if purchased_quantity <= 0:
                     return False, "구매수량은 0보다 커야 합니다"
             except ValueError:
                 return False, "구매수량은 숫자여야 합니다"
         else:
             # 구매가격만 입력된 경우, 구매수량은 1로 처리
-            purchased_quantity = 1.0
+            purchased_quantity = 1
 
     elif purchased_quantity_str and purchased_quantity_str.strip():
         # 구매수량만 입력된 경우 에러
