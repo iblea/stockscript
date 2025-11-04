@@ -27,6 +27,7 @@ def tradingview_stock_data():
 
     json_data = None
     content_type = request.headers.get('Content-Type')
+    print("stock data")
     print(content_type)
 
     try:
@@ -38,7 +39,8 @@ def tradingview_stock_data():
             print(f"This is not JSON content type. [{content_type}]")
             json_data = request.get_data(as_text=True, parse_form_data=False)
             json_data = json.loads(json_data)
-        print(json_data)
+        # print(json_data)
+        print("Get Data by stock data len[{}]".format(len(str(json_data))))
     except Exception as e:
         print("Error: request.get_data()")
         print(e)
@@ -77,6 +79,7 @@ def tradingview_alert():
     global safe_string
 
     content_type = request.headers.get('Content-Type')
+    print("stock alert")
     print(content_type)
 
     data: dict|None = None
@@ -85,6 +88,7 @@ def tradingview_alert():
 
     try:
         raw_data = request.get_data(as_text=True, parse_form_data=False)
+        print(raw_data)
     except Exception as e:
         print("Error: request.get_data()")
         print(e)
@@ -117,7 +121,7 @@ def tradingview_alert():
         # JSON 데이터가 아닌 경우, raw 데이터 가져오기
         print(f"This is not JSON content type. [{content_type}]")
         message = raw_data
-        # print(f"raw_data: '{raw_data}'")
+        print(f"raw_data: '{raw_data}'")
 
     # print(f"message: '{message}'")
     if message is None or len(message) == 0:
