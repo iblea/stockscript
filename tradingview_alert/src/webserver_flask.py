@@ -6,6 +6,8 @@ from msg import safe_string
 from futures import future_alert_1, get_data_hdd, set_data_hdd
 
 from stock_data import save_stockdata_in_memory
+import stock_data
+# import realtime_manager
 
 import json
 
@@ -71,6 +73,34 @@ def tradingview_check():
     return jsonify({
         "status": "success",
     }), 200
+
+
+@app.route('/stockinfo', methods=['GET'])
+def stockinfo():
+    """
+    GET /stockinfo - 전체 stock 목록 + realtime 정보 출력
+    GET /stockinfo?ticker=nq1! - 특정 ticker의 상세 정보 출력
+    """
+    ticker = request.args.get('ticker', '').lower()
+
+    if ticker == '':
+        # 전체 목록 출력 (/stock 명령어와 동일)
+        stock_info = stock_data.get_stockdata_string('')
+
+        # # realtime 정보 추가
+        # realtime_info = realtime_manager.get_realtime_message()
+
+        # result = stock_info
+        # if realtime_info:
+        #     result += "\n\n=== REALTIME ===\n" + realtime_info
+
+        # return result, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+        return stock_info, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    else:
+        # 특정 티커 정보 출력 (/stock ticker 명령어와 동일)
+        stock_info = stock_data.get_stockdata_string(ticker)
+        return stock_info, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 @app.route('/tradingview/alert', methods=['POST'])
