@@ -194,7 +194,8 @@ class StockData:
                     ret += f"usd      : null\n"
                     ret += f"krw      : null\n"
 
-            ret += "```"
+            ret += "```\n"
+            ret += f"current price: {self.getPrice()}"
 
         return ret
 

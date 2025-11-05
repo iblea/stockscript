@@ -75,7 +75,7 @@ def tradingview_check():
     }), 200
 
 
-@app.route('/stockinfo', methods=['GET'])
+@app.route('/tradingview/stockinfo', methods=['GET'])
 def stockinfo():
     """
     GET /stockinfo - 전체 stock 목록 + realtime 정보 출력
