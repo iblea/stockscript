@@ -96,8 +96,8 @@ def telegram_bot_thread():
                 # telegram용 mantra_string에서 메시지 읽기
                 mantra_message = msg.mantra_string_tg.get_value()
 
-                # telegram용 adi_string에서 메시지 읽기
-                adi_message = msg.adi_string_tg.get_value()
+                # telegram용 etc_string에서 메시지 읽기
+                etc_message = msg.etc_string_tg.get_value()
 
                 # alert 메시지 추가
                 alert_message = alert_manager.get_alert_message()
@@ -115,19 +115,19 @@ def telegram_bot_thread():
                         else:
                             msgdata = mantra_message
 
-                    # adi_message를 메시지에 추가
-                    if adi_message:
+                    # etc_message를 메시지에 추가
+                    if etc_message:
                         if msgdata:
-                            msgdata += "\n" + adi_message
+                            msgdata += "\n" + etc_message
                         else:
-                            msgdata = adi_message
+                            msgdata = etc_message
 
                 if msgdata and msgdata != "":
                     await telegram_msg_send(msgdata)
 
-                # 전송 후 telegram용 mantra_string과 adi_string 초기화 (한 번만 전송)
+                # 전송 후 telegram용 mantra_string과 etc_string 초기화 (한 번만 전송)
                 msg.mantra_string_tg.set_value("")
-                msg.adi_string_tg.set_value("")
+                msg.etc_string_tg.set_value("")
 
             # 짧은 대기 (CPU 부하 방지)
             await asyncio.sleep(1)

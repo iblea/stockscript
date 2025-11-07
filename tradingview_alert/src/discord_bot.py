@@ -317,8 +317,8 @@ class DiscordBot(discord.Client):
             # discord용 mantra_string에서 메시지 읽기
             mantra_message = msg.mantra_string_dc.get_value()
 
-            # discord용 adi_string에서 메시지 읽기
-            adi_message = msg.adi_string_dc.get_value()
+            # discord용 etc_string에서 메시지 읽기
+            etc_message = msg.etc_string_dc.get_value()
 
             # alert 메시지 추가
             alert_message = alert_manager.get_alert_message()
@@ -348,12 +348,12 @@ class DiscordBot(discord.Client):
                 if mantra_message:
                     subalert_message = mantra_message
 
-                # adi_message 추가
-                if adi_message:
+                # etc_message 추가
+                if etc_message:
                     if subalert_message:
-                        subalert_message += "\n" + adi_message
+                        subalert_message += "\n" + etc_message
                     else:
-                        subalert_message = adi_message
+                        subalert_message = etc_message
 
                 # subalert 메시지 전송
                 if subalert_message:
@@ -363,11 +363,11 @@ class DiscordBot(discord.Client):
             if self.alert_interval < 0:
                 msg.safe_string.set_value("")
                 msg.mantra_string_dc.set_value("")
-                msg.adi_string_dc.set_value("")
+                msg.etc_string_dc.set_value("")
             else:
-                # 전송 후 discord용 mantra_string과 adi_string 초기화 (한 번만 전송)
+                # 전송 후 discord용 mantra_string과 etc_string 초기화 (한 번만 전송)
                 msg.mantra_string_dc.set_value("")
-                msg.adi_string_dc.set_value("")
+                msg.etc_string_dc.set_value("")
 
 
 

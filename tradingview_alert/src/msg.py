@@ -152,11 +152,11 @@ safe_string = SafeString()
 
 # telegram용
 mantra_string_tg = SafeString()
-adi_string_tg = SafeString()
+etc_string_tg = SafeString()
 
 # discord용
 mantra_string_dc = SafeString()
-adi_string_dc = SafeString()
+etc_string_dc = SafeString()
 
 
 

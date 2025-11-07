@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from werkzeug.serving import WSGIRequestHandler
 
 # from msg import msg_queue, safe_string
-from msg import safe_string, mantra_string_tg, adi_string_tg, mantra_string_dc, adi_string_dc
+from msg import safe_string, mantra_string_tg, etc_string_tg, mantra_string_dc, etc_string_dc
 from futures import future_alert_1, get_data_hdd, set_data_hdd
 
 from stock_data import save_stockdata_in_memory
@@ -253,15 +253,13 @@ def tradingview_mantraband_alert():
     }), 200
 
 
-@app.route('/tradingview/adialert', methods=['POST'])
-def tradingview_adialert():
-    # ADI 골든크로스 / 데드크로스 알람
-
+@app.route('/tradingview/etcalert', methods=['POST'])
+def tradingview_etcalert():
     # global msg_queue
-    global adi_string_tg, adi_string_dc
+    global etc_string_tg, etc_string_dc
 
     content_type = request.headers.get('Content-Type')
-    print("adi cross")
+    print("etc cross")
     print(content_type)
 
     raw_data: str = ""
@@ -287,11 +285,11 @@ def tradingview_adialert():
             "message": "데이터가 없습니다."
         }), 400
 
-    # telegram용과 discord용 adi_string 모두에 메시지 추가
-    adi_string_tg.append(raw_data)
-    adi_string_dc.append(raw_data)
+    # telegram용과 discord용 etc_string 모두에 메시지 추가
+    etc_string_tg.append(raw_data)
+    etc_string_dc.append(raw_data)
 
-    # print(f"ADI alert message added: {len(raw_data)} characters")
+    # print(f"ETC alert message added: {len(raw_data)} characters")
 
     # 성공 응답
     return jsonify({
