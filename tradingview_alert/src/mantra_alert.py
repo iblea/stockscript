@@ -42,12 +42,9 @@ def format_mantra_alert(data: Dict[str, Any]) -> str:
 Current Price: {_round_value(current_price)}
 ```
 {ma_section}
-```
-
-```diff
+``````diff
 {diff_section}
 ```
-
 vwap: {_round_value(data.get('MA', {}).get('VWAP', 0))}
 adx: {_round_value(data.get('dmi', {}).get('adx', 0))}
 atr: {_round_value(data.get('atr', 0))}
