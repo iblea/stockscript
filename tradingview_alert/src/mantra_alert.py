@@ -20,8 +20,8 @@ def format_mantra_alert(data: Dict[str, Any]) -> str:
         if not _validate_data(data):
             return ""
 
-        # alertType에 따른 메시지 헤더 생성
-        alert_type = data.get("alertType", 0)
+        # status에 따른 메시지 헤더 생성
+        alert_type = data.get("status", 0)
         message = data.get("message", "")
 
         # 헤더 생성
@@ -76,9 +76,9 @@ def _validate_data(data: Dict[str, Any]) -> bool:
 
 def _get_alert_header(alert_type: int, message: str) -> str:
     """
-    alertType에 따른 헤더 문자열 생성
+    status에 따른 헤더 문자열 생성
 
-    alertType:
+    status:
         1: 롱 진입
         -1: 숏 진입
         0: 종료 (롱 종료/숏 종료)
