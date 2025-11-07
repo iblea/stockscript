@@ -150,9 +150,13 @@ msg_queue = SafeDeque(maxlen=100)
 
 safe_string = SafeString()
 
-mantra_string = SafeString()
+# telegram용
+mantra_string_tg = SafeString()
+adi_string_tg = SafeString()
 
-adi_string = SafeString()
+# discord용
+mantra_string_dc = SafeString()
+adi_string_dc = SafeString()
 
 
 

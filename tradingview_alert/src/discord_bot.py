@@ -314,11 +314,11 @@ class DiscordBot(discord.Client):
             # SafeString에서 현재 메시지 읽기 (Read Lock 사용)
             message = msg.safe_string.get_value()
 
-            # mantra_string에서 메시지 읽기
-            mantra_message = msg.mantra_string.get_value()
+            # discord용 mantra_string에서 메시지 읽기
+            mantra_message = msg.mantra_string_dc.get_value()
 
-            # adi_string에서 메시지 읽기
-            adi_message = msg.adi_string.get_value()
+            # discord용 adi_string에서 메시지 읽기
+            adi_message = msg.adi_string_dc.get_value()
 
             # alert 메시지 추가
             alert_message = alert_manager.get_alert_message()
@@ -362,12 +362,12 @@ class DiscordBot(discord.Client):
             # 전송 후 초기화
             if self.alert_interval < 0:
                 msg.safe_string.set_value("")
-                msg.mantra_string.set_value("")
-                msg.adi_string.set_value("")
+                msg.mantra_string_dc.set_value("")
+                msg.adi_string_dc.set_value("")
             else:
-                # 전송 후 mantra_string과 adi_string 초기화 (한 번만 전송)
-                msg.mantra_string.set_value("")
-                msg.adi_string.set_value("")
+                # 전송 후 discord용 mantra_string과 adi_string 초기화 (한 번만 전송)
+                msg.mantra_string_dc.set_value("")
+                msg.adi_string_dc.set_value("")
 
 
 

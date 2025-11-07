@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from werkzeug.serving import WSGIRequestHandler
 
 # from msg import msg_queue, safe_string
-from msg import safe_string, mantra_string, adi_string
+from msg import safe_string, mantra_string_tg, adi_string_tg, mantra_string_dc, adi_string_dc
 from futures import future_alert_1, get_data_hdd, set_data_hdd
 
 from stock_data import save_stockdata_in_memory
@@ -186,7 +186,7 @@ def tradingview_mantraband_alert():
     # 만트라밴드 알람
 
     # global msg_queue
-    global mantra_string
+    global mantra_string_tg, mantra_string_dc
 
     content_type = request.headers.get('Content-Type')
     print("mantra band")
@@ -246,8 +246,9 @@ def tradingview_mantraband_alert():
             "message": "메시지 생성 실패"
         }), 400
 
-    # mantra_string에 메시지 추가
-    mantra_string.append(message)
+    # telegram용과 discord용 mantra_string 모두에 메시지 추가
+    mantra_string_tg.append(message)
+    mantra_string_dc.append(message)
 
     # 성공 응답
     return jsonify({
@@ -260,7 +261,7 @@ def tradingview_adialert():
     # ADI 골든크로스 / 데드크로스 알람
 
     # global msg_queue
-    global adi_string
+    global adi_string_tg, adi_string_dc
 
     content_type = request.headers.get('Content-Type')
     print("adi cross")
@@ -289,8 +290,9 @@ def tradingview_adialert():
             "message": "데이터가 없습니다."
         }), 400
 
-    # alert message create - 받은 메시지를 그대로 adi_string에 추가
-    adi_string.append(raw_data)
+    # telegram용과 discord용 adi_string 모두에 메시지 추가
+    adi_string_tg.append(raw_data)
+    adi_string_dc.append(raw_data)
 
     print(f"ADI alert message added: {len(raw_data)} characters")
 
