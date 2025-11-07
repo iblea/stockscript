@@ -33,7 +33,7 @@ def tradingview_stock_data():
     print(content_type)
 
     try:
-        if content_type.startswith('application/json'):
+        if content_type is not None and content_type.startswith('application/json'):
             # JSON 데이터 가져오기
             json_data = request.get_json(force=True)
         else:
@@ -131,7 +131,7 @@ def tradingview_alert():
             message = "Error: request.data.decode()\n" + str(e) + "\n"
             raw_data = "None"
 
-    if content_type.startswith('application/json'):
+    if content_type is not None and content_type.startswith('application/json'):
         # JSON 데이터 가져오기
         try:
             data = request.get_json()
@@ -209,7 +209,7 @@ def tradingview_mantraband_alert():
             message = "Error: request.data.decode()\n" + str(e) + "\n"
             raw_data = "None"
 
-    if content_type.startswith('application/json'):
+    if content_type is not None and content_type.startswith('application/json'):
         # JSON 데이터 가져오기
         try:
             data = request.get_json()
@@ -270,7 +270,7 @@ def tradingview_adialert():
             message = "Error: request.data.decode()\n" + str(e) + "\n"
             raw_data = "None"
 
-    if content_type.startswith('application/json'):
+    if content_type is not None and content_type.startswith('application/json'):
         # JSON 데이터 가져오기
         try:
             data = request.get_json()
