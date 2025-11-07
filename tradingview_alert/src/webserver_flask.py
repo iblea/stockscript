@@ -112,7 +112,7 @@ def tradingview_alert():
     print("stock alert")
     print(content_type)
 
-    data: dict|None = None
+    data: dict | None = None
     raw_data: str = ""
     message: str = ""
 
@@ -177,3 +177,126 @@ def tradingview_alert():
     #     "status": "success",
     #     "received_data": data
     # }), 200
+
+
+@app.route('/tradingview/mantraalert', methods=['POST'])
+def tradingview_mantraband_alert():
+    # 만트라밴드 알람
+
+    # global msg_queue
+    global safe_string
+
+    content_type = request.headers.get('Content-Type')
+    print("mantra band")
+    print(content_type)
+
+    data: dict | None = None
+    raw_data: str = ""
+    message: str = ""
+
+    try:
+        raw_data = request.get_data(as_text=True, parse_form_data=False)
+        print(raw_data)
+    except Exception as e:
+        print("Error: request.get_data()")
+        print(e)
+        message = "Error: request.get_data()\n" + str(e) + "\n"
+        try:
+            raw_data = request.data.decode()
+        except Exception as e:
+            print("Error: request.data.decode()")
+            print(e)
+            message = "Error: request.data.decode()\n" + str(e) + "\n"
+            raw_data = "None"
+
+    if content_type.startswith('application/json'):
+        # JSON 데이터 가져오기
+        try:
+            data = request.get_json()
+        except Exception as e:
+            raw_data = request.data.decode()
+            print("Error: JSON Decode Error")
+            print(e)
+            message = "Error: JSON Decode Error, " + str(e) + "\n" + raw_data
+            data = None
+
+        if data is None:
+            print("Error: data is None")
+            message = "Error: data is None\n" + raw_data
+
+        print("application/json")
+        print(data)
+        # message: str = future_alert_1(data)
+    else:
+        # JSON 데이터가 아닌 경우, raw 데이터 가져오기
+        print(f"This is not JSON content type. [{content_type}]")
+        # message = raw_data
+
+    print(message)
+
+    # 성공 응답
+    return jsonify({
+        "status": "success"
+    }), 200
+
+
+@app.route('/tradingview/adialert', methods=['POST'])
+def tradingview_adialert():
+    # ADI 골든크로스 / 데드크로스 알람
+
+    # global msg_queue
+    global safe_string
+
+    content_type = request.headers.get('Content-Type')
+    print("adi cross")
+    print(content_type)
+
+    data: dict | None = None
+    raw_data: str = ""
+    message: str = ""
+
+    try:
+        raw_data = request.get_data(as_text=True, parse_form_data=False)
+        print(raw_data)
+    except Exception as e:
+        print("Error: request.get_data()")
+        print(e)
+        message = "Error: request.get_data()\n" + str(e) + "\n"
+        try:
+            raw_data = request.data.decode()
+        except Exception as e:
+            print("Error: request.data.decode()")
+            print(e)
+            message = "Error: request.data.decode()\n" + str(e) + "\n"
+            raw_data = "None"
+
+    if content_type.startswith('application/json'):
+        # JSON 데이터 가져오기
+        try:
+            data = request.get_json()
+        except Exception as e:
+            raw_data = request.data.decode()
+            print("Error: JSON Decode Error")
+            print(e)
+            message = "Error: JSON Decode Error, " + str(e) + "\n" + raw_data
+            data = None
+
+        if data is None:
+            print("Error: data is None")
+            message = "Error: data is None\n" + raw_data
+
+        print("application/json")
+        print(data)
+        # message: str = future_alert_1(data)
+    else:
+        # JSON 데이터가 아닌 경우, raw 데이터 가져오기
+        print(f"This is not JSON content type. [{content_type}]")
+        # message = raw_data
+
+    print(message)
+
+    # 성공 응답
+    return jsonify({
+        "status": "success"
+    }), 200
+
