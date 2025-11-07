@@ -120,7 +120,7 @@ def tradingview_alert():
 
     try:
         raw_data = request.get_data(as_text=True, parse_form_data=False)
-        print(raw_data)
+        # print(raw_data)
     except Exception as e:
         print("Error: request.get_data()")
         print(e)
@@ -153,7 +153,7 @@ def tradingview_alert():
         # JSON 데이터가 아닌 경우, raw 데이터 가져오기
         print(f"This is not JSON content type. [{content_type}]")
         message = raw_data
-        print(f"raw_data: '{raw_data}'")
+        # print(f"raw_data: '{raw_data}'")
 
     # print(f"message: '{message}'")
     if message is None or len(message) == 0:
@@ -198,7 +198,7 @@ def tradingview_mantraband_alert():
 
     try:
         raw_data = request.get_data(as_text=True, parse_form_data=False)
-        print(raw_data)
+        # print(raw_data)
     except Exception as e:
         print("Error: request.get_data()")
         print(e)
@@ -225,18 +225,15 @@ def tradingview_mantraband_alert():
         if data is None:
             print("Error: data is None")
             message = "Error: data is None\n" + raw_data
-        else:
-            print("application/json")
-            print(data)
-            # alert message create
-            message = format_mantra_alert(data)
+
+        message: str = format_mantra_alert(data)
 
     else:
         # JSON 데이터가 아닌 경우, raw 데이터 가져오기
         print(f"This is not JSON content type. [{content_type}]")
         message = "Error: This is not JSON content type. " + str(content_type)
 
-    print(message)
+    # print(message)
 
     # 메시지가 없거나 비어있으면 에러
     if message is None or len(message) == 0:
@@ -271,7 +268,7 @@ def tradingview_adialert():
 
     try:
         raw_data = request.get_data(as_text=True, parse_form_data=False)
-        print(raw_data)
+        # print(raw_data)
     except Exception as e:
         print("Error: request.get_data()")
         print(e)
@@ -283,7 +280,7 @@ def tradingview_adialert():
             raw_data = "None"
 
     # 메시지가 없거나 비어있으면 에러
-    if not raw_data or raw_data == "None":
+    if not raw_data:
         print("Error: No data received")
         return jsonify({
             "status": "error",
@@ -294,7 +291,7 @@ def tradingview_adialert():
     adi_string_tg.append(raw_data)
     adi_string_dc.append(raw_data)
 
-    print(f"ADI alert message added: {len(raw_data)} characters")
+    # print(f"ADI alert message added: {len(raw_data)} characters")
 
     # 성공 응답
     return jsonify({
