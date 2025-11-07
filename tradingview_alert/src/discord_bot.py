@@ -14,6 +14,7 @@ import msg
 import stock_data
 import alert_manager
 import realtime_manager
+from toggle_settings import toggle_settings
 
 
 client = None
@@ -44,6 +45,9 @@ class DiscordBot(discord.Client):
     last_realtime_message_id: Optional[int] = None  # 마지막 realtime 메시지 ID
     last_realtime_update_minute: int = -1  # 마지막으로 업데이트한 분 (0~59)
 
+    subalert_channel_id: int = 0  # subalert 채널 ID (mantra, adi 등)
+    subalert_channel: Optional[discord.TextChannel] = None  # subalert 채널 객체
+
     def __init__(self,
             config: dict,
             schedule_second: int = 3,
@@ -61,6 +65,8 @@ class DiscordBot(discord.Client):
         self.mention_id = self.config.get("mention_id", 0) or 0  # None이면 0으로 처리
         self.realtime_show_channel_id = self.config.get("realtime_show_channel_id", 0) or 0  # None이면 0으로 처리
         self.realtime_channel = None
+        self.subalert_channel_id = self.config.get("subalert_channel_id", 0) or 0  # None이면 0으로 처리
+        self.subalert_channel = None
 
         self.schedule_second = schedule_second
 
@@ -113,6 +119,14 @@ class DiscordBot(discord.Client):
                 else:
                     print(f"경고: Realtime 채널 ID {self.realtime_show_channel_id}를 찾을 수 없습니다.")
 
+            # subalert 채널 설정
+            if self.subalert_channel_id > 0:
+                self.subalert_channel = self.get_channel(self.subalert_channel_id)
+                if self.subalert_channel:
+                    print(f"Subalert 채널이 설정되었습니다: {self.subalert_channel.name}")
+                else:
+                    print(f"경고: Subalert 채널 ID {self.subalert_channel_id}를 찾을 수 없습니다.")
+
             print('-----------------------------------')
             self.schedular.start()
 
@@ -163,6 +177,11 @@ class DiscordBot(discord.Client):
         async def realtime(interaction: discord.Interaction, tickers: str = ""):
             print("realtime command")
             await set_realtime(interaction, tickers)
+
+        @self.tree.command()
+        async def matoggle(interaction: discord.Interaction, mode: str = ""):
+            print("matoggle command")
+            await toggle_mantra_alert(interaction, mode)
 
 
     async def find_last_realtime_message(self):
@@ -295,6 +314,12 @@ class DiscordBot(discord.Client):
             # SafeString에서 현재 메시지 읽기 (Read Lock 사용)
             message = msg.safe_string.get_value()
 
+            # mantra_string에서 메시지 읽기
+            mantra_message = msg.mantra_string.get_value()
+
+            # adi_string에서 메시지 읽기
+            adi_message = msg.adi_string.get_value()
+
             # alert 메시지 추가
             alert_message = alert_manager.get_alert_message()
             has_alert = False
@@ -305,18 +330,44 @@ class DiscordBot(discord.Client):
                 else:
                     message = alert_message
 
-            if message is None or message == "":
-                return
+            # alert 채널로 메시지 전송
+            if message:
+                # 메시지 전송 (alert가 있고 mention_id가 0이 아니면 멘션 추가)
+                if has_alert and self.mention_id is not None and self.mention_id > 0:
+                    mention_text = f"<@{self.mention_id}> "
+                    await self.alert_channel.send(mention_text + message)
+                else:
+                    await self.alert_channel.send(message)
 
+            # subalert 채널로 mantra와 adi 메시지 전송
+            # 토글 설정 확인
+            if toggle_settings.is_mantra_alert_enabled() and self.subalert_channel_id > 0 and self.subalert_channel:
+                subalert_message = ""
+
+                # mantra_message 추가
+                if mantra_message:
+                    subalert_message = mantra_message
+
+                # adi_message 추가
+                if adi_message:
+                    if subalert_message:
+                        subalert_message += "\n" + adi_message
+                    else:
+                        subalert_message = adi_message
+
+                # subalert 메시지 전송
+                if subalert_message:
+                    await self.subalert_channel.send(subalert_message)
+
+            # 전송 후 초기화
             if self.alert_interval < 0:
                 msg.safe_string.set_value("")
-
-            # 메시지 전송 (alert가 있고 mention_id가 0이 아니면 멘션 추가)
-            if has_alert and self.mention_id is not None and self.mention_id > 0:
-                mention_text = f"<@{self.mention_id}> "
-                await self.alert_channel.send(mention_text + message)
+                msg.mantra_string.set_value("")
+                msg.adi_string.set_value("")
             else:
-                await self.alert_channel.send(message)
+                # 전송 후 mantra_string과 adi_string 초기화 (한 번만 전송)
+                msg.mantra_string.set_value("")
+                msg.adi_string.set_value("")
 
 
 
@@ -439,6 +490,30 @@ async def set_realtime(interaction: discord.Interaction, tickers: str) -> None:
         # 특정 티커 표시
         ticker_list = tickers.split()
         success, message = realtime_manager.set_realtime_tickers(ticker_list)
+
+    await interaction.response.send_message(message)
+
+
+async def toggle_mantra_alert(interaction: discord.Interaction, mode: str) -> None:
+    """
+    /matoggle 커맨드 핸들러
+    - /matoggle : 현재 상태 표시
+    - /matoggle on : mantra/adi 알림 활성화
+    - /matoggle off : mantra/adi 알림 비활성화
+    """
+    mode = mode.strip().lower()
+
+    if mode == "on":
+        toggle_settings.set_mantra_alert(True)
+        message = "✅ Mantra/ADI 알림이 활성화되었습니다."
+    elif mode == "off":
+        toggle_settings.set_mantra_alert(False)
+        message = "❌ Mantra/ADI 알림이 비활성화되었습니다."
+    else:
+        # 현재 상태 표시
+        current_status = toggle_settings.is_mantra_alert_enabled()
+        status_text = "활성화됨 ✅" if current_status else "비활성화됨 ❌"
+        message = f"현재 Mantra/ADI 알림 상태: {status_text}\n\n사용법:\n- /matoggle on : 알림 활성화\n- /matoggle off : 알림 비활성화"
 
     await interaction.response.send_message(message)
 

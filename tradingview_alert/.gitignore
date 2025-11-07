@@ -1,4 +1,5 @@
 conf/config.json
+conf/toggle_settings.json
 
 cert/**
 data/**

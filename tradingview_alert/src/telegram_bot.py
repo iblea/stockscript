@@ -6,6 +6,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 import msg
 import alert_manager
+from toggle_settings import toggle_settings
 
 tg_bot: any = None
 tg_chatid: any = None
@@ -92,6 +93,12 @@ def telegram_bot_thread():
                 # 전송할 메시지 확인
                 msgdata = msg.safe_string.get_value()
 
+                # mantra_string에서 메시지 읽기
+                mantra_message = msg.mantra_string.get_value()
+
+                # adi_string에서 메시지 읽기
+                adi_message = msg.adi_string.get_value()
+
                 # alert 메시지 추가
                 alert_message = alert_manager.get_alert_message()
                 if alert_message:
@@ -100,8 +107,27 @@ def telegram_bot_thread():
                     else:
                         msgdata = alert_message
 
+                # mantra_message를 메시지에 추가 (토글 설정 확인)
+                if toggle_settings.is_mantra_alert_enabled():
+                    if mantra_message:
+                        if msgdata:
+                            msgdata += "\n" + mantra_message
+                        else:
+                            msgdata = mantra_message
+
+                    # adi_message를 메시지에 추가
+                    if adi_message:
+                        if msgdata:
+                            msgdata += "\n" + adi_message
+                        else:
+                            msgdata = adi_message
+
                 if msgdata and msgdata != "":
                     await telegram_msg_send(msgdata)
+
+                # 전송 후 mantra_string과 adi_string 초기화 (한 번만 전송)
+                msg.mantra_string.set_value("")
+                msg.adi_string.set_value("")
 
             # 짧은 대기 (CPU 부하 방지)
             await asyncio.sleep(1)

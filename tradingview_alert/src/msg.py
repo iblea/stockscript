@@ -150,6 +150,11 @@ msg_queue = SafeDeque(maxlen=100)
 
 safe_string = SafeString()
 
+mantra_string = SafeString()
+
+adi_string = SafeString()
+
+
 
 
 

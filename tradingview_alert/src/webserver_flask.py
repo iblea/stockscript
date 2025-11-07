@@ -2,12 +2,14 @@ from flask import Flask, request, jsonify
 from werkzeug.serving import WSGIRequestHandler
 
 # from msg import msg_queue, safe_string
-from msg import safe_string
+from msg import safe_string, mantra_string, adi_string
 from futures import future_alert_1, get_data_hdd, set_data_hdd
 
 from stock_data import save_stockdata_in_memory
 import stock_data
 # import realtime_manager
+
+from mantra_alert import format_mantra_alert
 
 import json
 
@@ -184,7 +186,7 @@ def tradingview_mantraband_alert():
     # 만트라밴드 알람
 
     # global msg_queue
-    global safe_string
+    global mantra_string
 
     content_type = request.headers.get('Content-Type')
     print("mantra band")
@@ -223,16 +225,29 @@ def tradingview_mantraband_alert():
         if data is None:
             print("Error: data is None")
             message = "Error: data is None\n" + raw_data
+        else:
+            print("application/json")
+            print(data)
+            # alert message create
+            message = format_mantra_alert(data)
 
-        print("application/json")
-        print(data)
-        # message: str = future_alert_1(data)
     else:
         # JSON 데이터가 아닌 경우, raw 데이터 가져오기
         print(f"This is not JSON content type. [{content_type}]")
-        # message = raw_data
+        message = "Error: This is not JSON content type. " + str(content_type)
 
     print(message)
+
+    # 메시지가 없거나 비어있으면 에러
+    if message is None or len(message) == 0:
+        print("Error: Wrong message! (None or empty)")
+        return jsonify({
+            "status": "error",
+            "message": "메시지 생성 실패"
+        }), 400
+
+    # mantra_string에 메시지 추가
+    mantra_string.append(message)
 
     # 성공 응답
     return jsonify({
@@ -245,15 +260,13 @@ def tradingview_adialert():
     # ADI 골든크로스 / 데드크로스 알람
 
     # global msg_queue
-    global safe_string
+    global adi_string
 
     content_type = request.headers.get('Content-Type')
     print("adi cross")
     print(content_type)
 
-    data: dict | None = None
     raw_data: str = ""
-    message: str = ""
 
     try:
         raw_data = request.get_data(as_text=True, parse_form_data=False)
@@ -261,39 +274,25 @@ def tradingview_adialert():
     except Exception as e:
         print("Error: request.get_data()")
         print(e)
-        message = "Error: request.get_data()\n" + str(e) + "\n"
         try:
             raw_data = request.data.decode()
         except Exception as e:
             print("Error: request.data.decode()")
             print(e)
-            message = "Error: request.data.decode()\n" + str(e) + "\n"
             raw_data = "None"
 
-    if content_type is not None and content_type.startswith('application/json'):
-        # JSON 데이터 가져오기
-        try:
-            data = request.get_json()
-        except Exception as e:
-            raw_data = request.data.decode()
-            print("Error: JSON Decode Error")
-            print(e)
-            message = "Error: JSON Decode Error, " + str(e) + "\n" + raw_data
-            data = None
+    # 메시지가 없거나 비어있으면 에러
+    if not raw_data or raw_data == "None":
+        print("Error: No data received")
+        return jsonify({
+            "status": "error",
+            "message": "데이터가 없습니다."
+        }), 400
 
-        if data is None:
-            print("Error: data is None")
-            message = "Error: data is None\n" + raw_data
+    # alert message create - 받은 메시지를 그대로 adi_string에 추가
+    adi_string.append(raw_data)
 
-        print("application/json")
-        print(data)
-        # message: str = future_alert_1(data)
-    else:
-        # JSON 데이터가 아닌 경우, raw 데이터 가져오기
-        print(f"This is not JSON content type. [{content_type}]")
-        # message = raw_data
-
-    print(message)
+    print(f"ADI alert message added: {len(raw_data)} characters")
 
     # 성공 응답
     return jsonify({
