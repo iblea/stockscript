@@ -31,7 +31,10 @@ if [ -z "$proc" ]; then
         cd "$curpath"
         export PYTHONUNBUFFERED=1
         # $BOT_PATH --daemon
-        echo -n "" > output.log
+        if [ ! -d "logs/" ]; then
+            mkdir -p logs
+        fi
+        echo -n "" > logs/output.log
         nohup $BOT_PATH >> output.log 2>&1 &
         # $BOT_PATH
     fi
