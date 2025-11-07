@@ -35,7 +35,7 @@ if [ -z "$proc" ]; then
             mkdir -p logs
         fi
         echo -n "" > logs/output.log
-        nohup $BOT_PATH >> output.log 2>&1 &
+        nohup $BOT_PATH >> logs/output.log 2>&1 &
         # $BOT_PATH
     fi
 else
