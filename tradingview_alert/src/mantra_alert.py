@@ -37,15 +37,14 @@ def format_mantra_alert(data: Dict[str, Any]) -> str:
         diff_section = _format_diff_section(data)
 
         # 최종 메시지 조합
-        result = f"""[만트라 밴드 알림]
+        result = f"""## [만트라 밴드 알림]
 {header}
 Current Price: {_round_value(current_price)}
 ```
 {ma_section}
 ``````diff
 {diff_section}
-```
-vwap: {_round_value(data.get('MA', {}).get('VWAP', 0))}
+```vwap: {_round_value(data.get('MA', {}).get('VWAP', 0))}
 adx: {_round_value(data.get('dmi', {}).get('adx', 0))}
 atr: {_round_value(data.get('atr', 0))}
 Current Price: {_round_value(current_price)}
