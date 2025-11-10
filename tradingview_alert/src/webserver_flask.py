@@ -52,6 +52,7 @@ def tradingview_stock_data():
 
     if json_data is None:
         print("Error: json_data is None")
+        print(raw_data)
         return jsonify({
             "status": "error",
             "message": "json_data is None"
@@ -130,6 +131,7 @@ def tradingview_alert():
         except Exception as e:
             print("Error: request.data.decode()")
             print(e)
+            print(raw_data)
             message = "Error: request.data.decode()\n" + str(e) + "\n"
             raw_data = "None"
 
@@ -141,6 +143,7 @@ def tradingview_alert():
             raw_data = request.data.decode()
             print("Error: JSON Decode Error")
             print(e)
+            print(raw_data)
             message = "Error: JSON Decode Error, " + str(e) + "\n" + raw_data
             data = None
 
@@ -158,6 +161,7 @@ def tradingview_alert():
     # print(f"message: '{message}'")
     if message is None or len(message) == 0:
         print("Error: Wrong message! (None or empty)")
+        print(raw_data)
         return jsonify({
             "status": "error",
             "message": "메시지 내용이 없습니다."
@@ -209,6 +213,7 @@ def tradingview_mantraband_alert():
             print("Error: request.data.decode()")
             print(e)
             message = "Error: request.data.decode()\n" + str(e) + "\n"
+            print(raw_data)
             raw_data = "None"
 
     if content_type is not None and content_type.startswith('application/json'):
@@ -238,6 +243,7 @@ def tradingview_mantraband_alert():
     # 메시지가 없거나 비어있으면 에러
     if message is None or len(message) == 0:
         print("Error: Wrong message! (None or empty)")
+        print(raw_data)
         return jsonify({
             "status": "error",
             "message": "메시지 생성 실패"
@@ -275,11 +281,13 @@ def tradingview_etcalert():
         except Exception as e:
             print("Error: request.data.decode()")
             print(e)
+            print(raw_data)
             raw_data = "None"
 
     # 메시지가 없거나 비어있으면 에러
     if not raw_data:
         print("Error: No data received")
+        print(raw_data)
         return jsonify({
             "status": "error",
             "message": "데이터가 없습니다."
