@@ -342,22 +342,18 @@ class DiscordBot(discord.Client):
             # subalert 채널로 mantra와 adi 메시지 전송
             # 토글 설정 확인
             if toggle_settings.is_mantra_alert_enabled() and self.subalert_channel_id > 0 and self.subalert_channel:
-                subalert_message = ""
+                # mention 텍스트 생성
+                mention_text = ""
+                if self.mention_id is not None and self.mention_id > 0:
+                    mention_text = f"\n<@{self.mention_id}>"
 
-                # mantra_message 추가
+                # mantra_message 전송
                 if mantra_message:
-                    subalert_message = mantra_message
+                    await self.subalert_channel.send(mantra_message + mention_text)
 
-                # etc_message 추가
+                # etc_message 전송
                 if etc_message:
-                    if subalert_message:
-                        subalert_message += "\n" + etc_message
-                    else:
-                        subalert_message = etc_message
-
-                # subalert 메시지 전송
-                if subalert_message:
-                    await self.subalert_channel.send(subalert_message)
+                    await self.subalert_channel.send(etc_message + mention_text)
 
             # 전송 후 초기화
             if self.alert_interval < 0:
