@@ -27,8 +27,8 @@ def format_mantra_alert(data: Dict[str, Any]) -> str:
         # 헤더 생성
         header = _get_alert_header(alert_type, message)
 
-        # 현재 가격
-        current_price = data.get("price", {}).get("close", 0)
+        # 현재 가격 (null 값 처리)
+        current_price = data.get("price", {}).get("close") or 0
 
         # MA 데이터 포맷팅
         ma_section = _format_ma_section(data.get("MA", {}))
@@ -37,6 +37,10 @@ def format_mantra_alert(data: Dict[str, Any]) -> str:
         diff_section = _format_diff_section(data)
 
         # 최종 메시지 조합
+        vwap_val = data.get('MA', {}).get('VWAP') or 0
+        adx_val = data.get('dmi', {}).get('adx') or 0
+        atr_val = data.get('atr') or 0
+
         result = f"""## [만트라 밴드 알림]
 {header}
 Current Price: {_round_value(current_price)}
@@ -44,9 +48,9 @@ Current Price: {_round_value(current_price)}
 {ma_section}
 ``````diff
 {diff_section}
-```vwap: {_round_value(data.get('MA', {}).get('VWAP', 0))}
-adx: {_round_value(data.get('dmi', {}).get('adx', 0))}
-atr: {_round_value(data.get('atr', 0))}
+```vwap: {_round_value(vwap_val)}
+adx: {_round_value(adx_val)}
+atr: {_round_value(atr_val)}
 Current Price: {_round_value(current_price)}
 {header}
 """
@@ -102,6 +106,7 @@ def _get_alert_header(alert_type: int, message: str) -> str:
 def _format_ma_section(ma_data: Dict[str, Any]) -> str:
     """
     MA(이동평균) 데이터 포맷팅
+    null 값이 올 수 있으므로 안전하게 처리
     """
     # 순서대로 출력
     lines = []
@@ -113,9 +118,9 @@ def _format_ma_section(ma_data: Dict[str, Any]) -> str:
     lines.append(f" 60: {_round_value(ma_data.get('60', 0))}")
     lines.append(f"120: {_round_value(ma_data.get('120', 0))}")
 
-    # 5day, 20day (또는 5d, 20d)
-    day5 = ma_data.get('5day', ma_data.get('5d', 0))
-    day20 = ma_data.get('20day', ma_data.get('20d', 0))
+    # 5d, 20d - null 값이 올 수 있으므로 안전하게 처리
+    day5 = ma_data.get('5d') or 0
+    day20 = ma_data.get('20d') or 0
 
     lines.append(f" 5d: {_round_value(day5)}")
     lines.append(f"20d: {_round_value(day20)}")
@@ -160,9 +165,10 @@ def _format_macd(macd_data: Dict[str, Any]) -> str:
     """
     MACD 포맷팅
     macd > signal = +, macd < signal = -
+    null 값은 0으로 처리
     """
-    macd_val = macd_data.get("macd", 0)
-    signal_val = macd_data.get("signal", 0)
+    macd_val = macd_data.get("macd") or 0
+    signal_val = macd_data.get("signal") or 0
 
     prefix = ""
     emoji = ""
@@ -181,9 +187,10 @@ def _format_oscillator(macd_data: Dict[str, Any]) -> str:
     """
     Oscillator 포맷팅
     oscillator > 0 = +, oscillator < 0 = -
+    null 값은 0으로 처리
     """
     # 필드명이 "osilator" 또는 "oscillator"일 수 있음
-    osc_val = macd_data.get("oscillator", macd_data.get("osilator", 0))
+    osc_val = macd_data.get("oscillator") or 0
 
     prefix = ""
     emoji = ""
@@ -202,8 +209,9 @@ def _format_mfi(rsi_data: Dict[str, Any]) -> str:
     """
     MFI 포맷팅
     mfi >= 80 = - (과매수), mfi <= 20 = + (과매도)
+    null 값은 0으로 처리
     """
-    mfi_val = rsi_data.get("mfi", 0)
+    mfi_val = rsi_data.get("mfi") or 0
 
     prefix = ""
 
@@ -224,9 +232,10 @@ def _format_rsi(rsi_data: Dict[str, Any]) -> str:
     """
     RSI 포맷팅
     rsi >= 70 = - (과매수), rsi <= 30 = + (과매도)
+    null 값은 0으로 처리
     """
-    rsi_val = rsi_data.get("rsi", 0)
-    signal_val = rsi_data.get("signal", 0)
+    rsi_val = rsi_data.get("rsi") or 0
+    signal_val = rsi_data.get("signal") or 0
 
     prefix = ""
     emoji = ""
@@ -250,9 +259,10 @@ def _format_dmi(dmi_data: Dict[str, Any]) -> str:
     """
     DMI 포맷팅
     diplus > diminus = +, diplus < diminus = -
+    null 값은 0으로 처리
     """
-    diplus_val = dmi_data.get("diplus", 0)
-    diminus_val = dmi_data.get("diminus", 0)
+    diplus_val = dmi_data.get("diplus") or 0
+    diminus_val = dmi_data.get("diminus") or 0
 
     prefix = ""
     emoji = ""
@@ -271,11 +281,12 @@ def _format_price(price_data: Dict[str, Any]) -> str:
     """
     시/고/저/종 포맷팅
     (종가 - 시가) > 0 = +, < 0 = -
+    null 값은 0으로 처리
     """
-    open_val = price_data.get("open", 0)
-    high_val = price_data.get("high", 0)
-    low_val = price_data.get("low", 0)
-    close_val = price_data.get("close", 0)
+    open_val = price_data.get("open") or 0
+    high_val = price_data.get("high") or 0
+    low_val = price_data.get("low") or 0
+    close_val = price_data.get("close") or 0
 
     diff = close_val - open_val
 
@@ -296,8 +307,11 @@ def _format_price(price_data: Dict[str, Any]) -> str:
         return line
 
 
-def _round_value(value: float) -> str:
+def _round_value(value: Optional[float]) -> str:
     """
     소숫점 2자리로 반올림하여 문자열 반환
+    None이나 null 값은 0으로 처리
     """
+    if value is None:
+        return "0.00"
     return f"{value:.2f}"
