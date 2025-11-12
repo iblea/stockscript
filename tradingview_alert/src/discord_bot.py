@@ -45,7 +45,7 @@ class DiscordBot(discord.Client):
     last_realtime_message_id: Optional[int] = None  # 마지막 realtime 메시지 ID
     last_realtime_update_minute: int = -1  # 마지막으로 업데이트한 분 (0~59)
 
-    subalert_channel_id: int = 0  # subalert 채널 ID (mantra, adi 등)
+    subalert_channel_id: int = 0  # subalert 채널 ID (phase, etc 등)
     subalert_channel: Optional[discord.TextChannel] = None  # subalert 채널 객체
 
     def __init__(self,
@@ -179,9 +179,9 @@ class DiscordBot(discord.Client):
             await set_realtime(interaction, tickers)
 
         @self.tree.command()
-        async def matoggle(interaction: discord.Interaction, mode: str = ""):
-            print("matoggle command")
-            await toggle_mantra_alert(interaction, mode)
+        async def phtoggle(interaction: discord.Interaction, mode: str = ""):
+            print("phtoggle command")
+            await toggle_phase_alert(interaction, mode)
 
 
     async def find_last_realtime_message(self):
@@ -314,8 +314,8 @@ class DiscordBot(discord.Client):
             # SafeString에서 현재 메시지 읽기 (Read Lock 사용)
             message = msg.safe_string.get_value()
 
-            # discord용 mantra_string에서 메시지 읽기
-            mantra_message = msg.mantra_string_dc.get_value()
+            # discord용 phase_string에서 메시지 읽기
+            phase_message = msg.phase_string_dc.get_value()
 
             # discord용 etc_string에서 메시지 읽기
             etc_message = msg.etc_string_dc.get_value()
@@ -339,17 +339,17 @@ class DiscordBot(discord.Client):
                 else:
                     await self.alert_channel.send(message)
 
-            # subalert 채널로 mantra와 adi 메시지 전송
+            # subalert 채널로 phase와 etc 메시지 전송
             # 토글 설정 확인
-            if toggle_settings.is_mantra_alert_enabled() and self.subalert_channel_id > 0 and self.subalert_channel:
+            if toggle_settings.is_phase_alert_enabled() and self.subalert_channel_id > 0 and self.subalert_channel:
                 # mention 텍스트 생성
                 mention_text = ""
                 if self.mention_id is not None and self.mention_id > 0:
                     mention_text = f"\n<@{self.mention_id}>"
 
-                # mantra_message 전송
-                if mantra_message:
-                    await self.subalert_channel.send(mantra_message + mention_text)
+                # phase_message 전송
+                if phase_message:
+                    await self.subalert_channel.send(phase_message + mention_text)
 
                 # etc_message 전송
                 if etc_message:
@@ -358,11 +358,11 @@ class DiscordBot(discord.Client):
             # 전송 후 초기화
             if self.alert_interval < 0:
                 msg.safe_string.set_value("")
-                msg.mantra_string_dc.set_value("")
+                msg.phase_string_dc.set_value("")
                 msg.etc_string_dc.set_value("")
             else:
-                # 전송 후 discord용 mantra_string과 etc_string 초기화 (한 번만 전송)
-                msg.mantra_string_dc.set_value("")
+                # 전송 후 discord용 phase_string과 etc_string 초기화 (한 번만 전송)
+                msg.phase_string_dc.set_value("")
                 msg.etc_string_dc.set_value("")
 
 
@@ -490,26 +490,26 @@ async def set_realtime(interaction: discord.Interaction, tickers: str) -> None:
     await interaction.response.send_message(message)
 
 
-async def toggle_mantra_alert(interaction: discord.Interaction, mode: str) -> None:
+async def toggle_phase_alert(interaction: discord.Interaction, mode: str) -> None:
     """
-    /matoggle 커맨드 핸들러
-    - /matoggle : 현재 상태 표시
-    - /matoggle on : mantra/adi 알림 활성화
-    - /matoggle off : mantra/adi 알림 비활성화
+    /phtoggle 커맨드 핸들러 (국면 변경 알림)
+    - /phtoggle : 현재 상태 표시
+    - /phtoggle on : phase 알림 활성화
+    - /phtoggle off : phase 알림 비활성화
     """
     mode = mode.strip().lower()
 
     if mode == "on":
-        toggle_settings.set_mantra_alert(True)
-        message = "✅ Mantra/ADI 알림이 활성화되었습니다."
+        toggle_settings.set_phase_alert(True)
+        message = "✅ Phase 알림이 활성화되었습니다."
     elif mode == "off":
-        toggle_settings.set_mantra_alert(False)
-        message = "❌ Mantra/ADI 알림이 비활성화되었습니다."
+        toggle_settings.set_phase_alert(False)
+        message = "❌ Phase 알림이 비활성화되었습니다."
     else:
         # 현재 상태 표시
-        current_status = toggle_settings.is_mantra_alert_enabled()
+        current_status = toggle_settings.is_phase_alert_enabled()
         status_text = "활성화됨 ✅" if current_status else "비활성화됨 ❌"
-        message = f"현재 Mantra/ADI 알림 상태: {status_text}\n\n사용법:\n- /matoggle on : 알림 활성화\n- /matoggle off : 알림 비활성화"
+        message = f"현재 Phase 알림 상태: {status_text}\n\n사용법:\n- /phtoggle on : 알림 활성화\n- /phtoggle off : 알림 비활성화"
 
     await interaction.response.send_message(message)
 

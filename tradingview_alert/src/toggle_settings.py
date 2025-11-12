@@ -25,7 +25,7 @@ class ToggleSettings:
         self.settings_file = os.path.join(conf_dir, settings_file)
         self.lock = Lock()
         self.settings = {
-            "mantra_alert_enabled": True,  # 기본값: 활성화
+            "phase_alert_enabled": True,  # 기본값: 활성화
         }
         self._load_settings()
 
@@ -62,21 +62,21 @@ class ToggleSettings:
         with self.lock:
             self._save_settings()
 
-    def is_mantra_alert_enabled(self) -> bool:
-        """mantra/adi 알림이 활성화되어 있는지 확인"""
+    def is_phase_alert_enabled(self) -> bool:
+        """phase 알림이 활성화되어 있는지 확인"""
         with self.lock:
-            return self.settings.get("mantra_alert_enabled", True)
+            return self.settings.get("phase_alert_enabled", True)
 
-    def set_mantra_alert(self, enabled: bool) -> None:
-        """mantra/adi 알림 활성화/비활성화 설정"""
+    def set_phase_alert(self, enabled: bool) -> None:
+        """phase 알림 활성화/비활성화 설정"""
         with self.lock:
-            self.settings["mantra_alert_enabled"] = enabled
+            self.settings["phase_alert_enabled"] = enabled
             self._save_settings()
 
-    def toggle_mantra_alert(self) -> bool:
-        """mantra/adi 알림 토글 (활성화 ↔ 비활성화)"""
-        current = self.is_mantra_alert_enabled()
-        self.set_mantra_alert(not current)
+    def toggle_phase_alert(self) -> bool:
+        """phase 알림 토글 (활성화 ↔ 비활성화)"""
+        current = self.is_phase_alert_enabled()
+        self.set_phase_alert(not current)
         return not current
 
 

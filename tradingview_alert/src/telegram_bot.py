@@ -93,8 +93,8 @@ def telegram_bot_thread():
                 # 전송할 메시지 확인
                 msgdata = msg.safe_string.get_value()
 
-                # telegram용 mantra_string에서 메시지 읽기
-                mantra_message = msg.mantra_string_tg.get_value()
+                # telegram용 phase_string에서 메시지 읽기
+                phase_message = msg.phase_string_tg.get_value()
 
                 # telegram용 etc_string에서 메시지 읽기
                 etc_message = msg.etc_string_tg.get_value()
@@ -107,13 +107,13 @@ def telegram_bot_thread():
                     else:
                         msgdata = alert_message
 
-                # mantra_message를 메시지에 추가 (토글 설정 확인)
-                if toggle_settings.is_mantra_alert_enabled():
-                    if mantra_message:
+                # phase_message를 메시지에 추가 (토글 설정 확인)
+                if toggle_settings.is_phase_alert_enabled():
+                    if phase_message:
                         if msgdata:
-                            msgdata += "\n" + mantra_message
+                            msgdata += "\n" + phase_message
                         else:
-                            msgdata = mantra_message
+                            msgdata = phase_message
 
                     # etc_message를 메시지에 추가
                     if etc_message:
@@ -125,8 +125,8 @@ def telegram_bot_thread():
                 if msgdata and msgdata != "":
                     await telegram_msg_send(msgdata)
 
-                # 전송 후 telegram용 mantra_string과 etc_string 초기화 (한 번만 전송)
-                msg.mantra_string_tg.set_value("")
+                # 전송 후 telegram용 phase_string과 etc_string 초기화 (한 번만 전송)
+                msg.phase_string_tg.set_value("")
                 msg.etc_string_tg.set_value("")
 
             # 짧은 대기 (CPU 부하 방지)

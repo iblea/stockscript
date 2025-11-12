@@ -151,11 +151,11 @@ msg_queue = SafeDeque(maxlen=100)
 safe_string = SafeString()
 
 # telegram용
-mantra_string_tg = SafeString()
+phase_string_tg = SafeString()
 etc_string_tg = SafeString()
 
 # discord용
-mantra_string_dc = SafeString()
+phase_string_dc = SafeString()
 etc_string_dc = SafeString()
 
 
