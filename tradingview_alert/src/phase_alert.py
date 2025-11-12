@@ -43,7 +43,7 @@ def format_phase_alert(data: Dict[str, Any]) -> str:
         atr_val = data.get('atr') or 0
         current_price = data.get("price", {}).get("close") or 0
 
-        result = f"""{header}
+        result = f"""# {header}
 {phase_line}
 BB: {_round_value(bb_val)}
 ```
