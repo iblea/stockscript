@@ -40,9 +40,11 @@ async def telegram_msg_send(msg_str):
 
 # 텔레그램 명령어 핸들러
 async def handle_chk_command(update, context):
-    # chk 명령 처리
+    # chk 명령 처리 - safe_string 및 mamacd 메시지 큐 비우기
     msg.safe_string.set_value("")
-    await update.message.reply_text("alert check")
+    msg.mamacd_string_tg.set_value("")
+    msg.mamacd_string_dc.set_value("")
+    await update.message.reply_text("alert check (safe_string, mamacd cleared)")
 
 
 async def handle_chka_command(update, context):
@@ -156,9 +158,9 @@ def telegram_bot_thread():
                     await telegram_msg_send(msgdata)
 
                 # 전송 후 telegram용 phase_string과 etc_string 초기화 (한 번만 전송)
+                # mamacd_string_tg는 초기화하지 않음 (/chk로만 초기화)
                 msg.phase_string_tg.set_value("")
                 msg.etc_string_tg.set_value("")
-                msg.mamacd_string_tg.set_value("")
                 msg.mamacd_string_tg_2.set_value("")
                 msg.ob_string_tg.set_value("")
 

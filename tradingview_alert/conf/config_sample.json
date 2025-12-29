@@ -20,7 +20,9 @@
         "alert_interval": 0,
         "mention_id": 0,
         "realtime_show_channel_id": 0,
-        "subalert_channel_id": 0
+        "etcalert_channel_id": 0
+        "mamacdalert_channel_id": 0
+        "phasealert_channel_id": 0
     },
     "telegram": {
         "token": "",

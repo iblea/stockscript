@@ -45,8 +45,13 @@ class DiscordBot(discord.Client):
     last_realtime_message_id: Optional[int] = None  # 마지막 realtime 메시지 ID
     last_realtime_update_minute: int = -1  # 마지막으로 업데이트한 분 (0~59)
 
-    subalert_channel_id: int = 0  # subalert 채널 ID (phase, etc 등)
-    subalert_channel: Optional[discord.TextChannel] = None  # subalert 채널 객체
+    # 채널별 분리
+    etcalert_channel_id: int = 0      # etcalert 채널 ID (mamacd, obalert, etcalert)
+    etcalert_channel: Optional[discord.TextChannel] = None
+    mamacdalert_channel_id: int = 0   # mamacdalert 채널 ID
+    mamacdalert_channel: Optional[discord.TextChannel] = None
+    phasealert_channel_id: int = 0    # phasealert 채널 ID
+    phasealert_channel: Optional[discord.TextChannel] = None
 
     def __init__(self,
             config: dict,
@@ -65,8 +70,14 @@ class DiscordBot(discord.Client):
         self.mention_id = self.config.get("mention_id", 0) or 0  # None이면 0으로 처리
         self.realtime_show_channel_id = self.config.get("realtime_show_channel_id", 0) or 0  # None이면 0으로 처리
         self.realtime_channel = None
-        self.subalert_channel_id = self.config.get("subalert_channel_id", 0) or 0  # None이면 0으로 처리
-        self.subalert_channel = None
+
+        # 채널별 분리 설정
+        self.etcalert_channel_id = self.config.get("etcalert_channel_id", 0) or 0
+        self.etcalert_channel = None
+        self.mamacdalert_channel_id = self.config.get("mamacdalert_channel_id", 0) or 0
+        self.mamacdalert_channel = None
+        self.phasealert_channel_id = self.config.get("phasealert_channel_id", 0) or 0
+        self.phasealert_channel = None
 
         self.schedule_second = schedule_second
 
@@ -119,13 +130,29 @@ class DiscordBot(discord.Client):
                 else:
                     print(f"경고: Realtime 채널 ID {self.realtime_show_channel_id}를 찾을 수 없습니다.")
 
-            # subalert 채널 설정
-            if self.subalert_channel_id > 0:
-                self.subalert_channel = self.get_channel(self.subalert_channel_id)
-                if self.subalert_channel:
-                    print(f"Subalert 채널이 설정되었습니다: {self.subalert_channel.name}")
+            # etcalert 채널 설정 (mamacd, obalert, etcalert)
+            if self.etcalert_channel_id > 0:
+                self.etcalert_channel = self.get_channel(self.etcalert_channel_id)
+                if self.etcalert_channel:
+                    print(f"Etcalert 채널이 설정되었습니다: {self.etcalert_channel.name}")
                 else:
-                    print(f"경고: Subalert 채널 ID {self.subalert_channel_id}를 찾을 수 없습니다.")
+                    print(f"경고: Etcalert 채널 ID {self.etcalert_channel_id}를 찾을 수 없습니다.")
+
+            # mamacdalert 채널 설정
+            if self.mamacdalert_channel_id > 0:
+                self.mamacdalert_channel = self.get_channel(self.mamacdalert_channel_id)
+                if self.mamacdalert_channel:
+                    print(f"Mamacdalert 채널이 설정되었습니다: {self.mamacdalert_channel.name}")
+                else:
+                    print(f"경고: Mamacdalert 채널 ID {self.mamacdalert_channel_id}를 찾을 수 없습니다.")
+
+            # phasealert 채널 설정
+            if self.phasealert_channel_id > 0:
+                self.phasealert_channel = self.get_channel(self.phasealert_channel_id)
+                if self.phasealert_channel:
+                    print(f"Phasealert 채널이 설정되었습니다: {self.phasealert_channel.name}")
+                else:
+                    print(f"경고: Phasealert 채널 ID {self.phasealert_channel_id}를 찾을 수 없습니다.")
 
             print('-----------------------------------')
             self.schedular.start()
@@ -348,47 +375,48 @@ class DiscordBot(discord.Client):
                 else:
                     await self.alert_channel.send(message)
 
-            # subalert 채널로 phase와 etc, mamacd, ob 메시지 전송
-            # 토글 설정 확인
-            if toggle_settings.is_phase_alert_enabled() and self.subalert_channel_id > 0 and self.subalert_channel:
+            # 토글 설정 확인 후 각 채널로 메시지 전송
+            if toggle_settings.is_phase_alert_enabled():
                 # mention 텍스트 생성
                 mention_text = ""
                 if self.mention_id is not None and self.mention_id > 0:
                     mention_text = f"\n<@{self.mention_id}>"
 
-                # phase_message 전송
-                if phase_message:
-                    await self.subalert_channel.send(phase_message + mention_text)
+                # phasealert_channel로 phase_message 전송
+                if phase_message and self.phasealert_channel_id > 0 and self.phasealert_channel:
+                    await self.phasealert_channel.send(phase_message + mention_text)
 
-                # etc_message 전송
-                if etc_message:
-                    await self.subalert_channel.send(etc_message + mention_text)
+                # mamacdalert_channel로 mamacd_message 전송 (mamacdalert)
+                if mamacd_message and self.mamacdalert_channel_id > 0 and self.mamacdalert_channel:
+                    await self.mamacdalert_channel.send(mamacd_message + mention_text)
 
-                # mamacd_message 전송 (mamacdalert)
-                if mamacd_message:
-                    await self.subalert_channel.send(mamacd_message + mention_text)
+                # etcalert_channel로 etc, mamacd_2, ob 메시지 전송
+                if self.etcalert_channel_id > 0 and self.etcalert_channel:
+                    # etc_message 전송
+                    if etc_message:
+                        await self.etcalert_channel.send(etc_message + mention_text)
 
-                # mamacd_message_2 전송 (mamacd)
-                if mamacd_message_2:
-                    await self.subalert_channel.send(mamacd_message_2 + mention_text)
+                    # mamacd_message_2 전송 (mamacd)
+                    if mamacd_message_2:
+                        await self.etcalert_channel.send(mamacd_message_2 + mention_text)
 
-                # ob_message 전송
-                if ob_message:
-                    await self.subalert_channel.send(ob_message + mention_text)
+                    # ob_message 전송
+                    if ob_message:
+                        await self.etcalert_channel.send(ob_message + mention_text)
 
-            # 전송 후 초기화
+            # 전송 후 초기화 (mamacd_string_dc는 /chk 명령어로만 초기화)
             if self.alert_interval < 0:
                 msg.safe_string.set_value("")
                 msg.phase_string_dc.set_value("")
                 msg.etc_string_dc.set_value("")
-                msg.mamacd_string_dc.set_value("")
+                # mamacd_string_dc는 초기화하지 않음 (/chk로만 초기화)
                 msg.mamacd_string_dc_2.set_value("")
                 msg.ob_string_dc.set_value("")
             else:
                 # 전송 후 discord용 phase_string과 etc_string 초기화 (한 번만 전송)
                 msg.phase_string_dc.set_value("")
                 msg.etc_string_dc.set_value("")
-                msg.mamacd_string_dc.set_value("")
+                # mamacd_string_dc는 초기화하지 않음 (/chk로만 초기화)
                 msg.mamacd_string_dc_2.set_value("")
                 msg.ob_string_dc.set_value("")
 
@@ -466,8 +494,11 @@ def discord_bot_run(conf: dict):
 
 # import discord
 async def check_message(interaction: discord.Interaction) -> None:
+    # safe_string 및 mamacd 메시지 큐 비우기
     msg.safe_string.set_value("")
-    await interaction.response.send_message("alert check")
+    msg.mamacd_string_dc.set_value("")
+    msg.mamacd_string_tg.set_value("")
+    await interaction.response.send_message("alert check (safe_string, mamacd cleared)")
 
 async def print_stock(interaction: discord.Interaction, ticker: str) -> None:
     stock_data_str = stock_data.get_stockdata_string(ticker.lower())
