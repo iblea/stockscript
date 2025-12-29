@@ -320,6 +320,15 @@ class DiscordBot(discord.Client):
             # discord용 etc_string에서 메시지 읽기
             etc_message = msg.etc_string_dc.get_value()
 
+            # discord용 mamacd_string에서 메시지 읽기 (mamacdalert)
+            mamacd_message = msg.mamacd_string_dc.get_value()
+
+            # discord용 mamacd_string_2에서 메시지 읽기 (mamacd)
+            mamacd_message_2 = msg.mamacd_string_dc_2.get_value()
+
+            # discord용 ob_string에서 메시지 읽기
+            ob_message = msg.ob_string_dc.get_value()
+
             # alert 메시지 추가
             alert_message = alert_manager.get_alert_message()
             has_alert = False
@@ -339,7 +348,7 @@ class DiscordBot(discord.Client):
                 else:
                     await self.alert_channel.send(message)
 
-            # subalert 채널로 phase와 etc 메시지 전송
+            # subalert 채널로 phase와 etc, mamacd, ob 메시지 전송
             # 토글 설정 확인
             if toggle_settings.is_phase_alert_enabled() and self.subalert_channel_id > 0 and self.subalert_channel:
                 # mention 텍스트 생성
@@ -355,15 +364,33 @@ class DiscordBot(discord.Client):
                 if etc_message:
                     await self.subalert_channel.send(etc_message + mention_text)
 
+                # mamacd_message 전송 (mamacdalert)
+                if mamacd_message:
+                    await self.subalert_channel.send(mamacd_message + mention_text)
+
+                # mamacd_message_2 전송 (mamacd)
+                if mamacd_message_2:
+                    await self.subalert_channel.send(mamacd_message_2 + mention_text)
+
+                # ob_message 전송
+                if ob_message:
+                    await self.subalert_channel.send(ob_message + mention_text)
+
             # 전송 후 초기화
             if self.alert_interval < 0:
                 msg.safe_string.set_value("")
                 msg.phase_string_dc.set_value("")
                 msg.etc_string_dc.set_value("")
+                msg.mamacd_string_dc.set_value("")
+                msg.mamacd_string_dc_2.set_value("")
+                msg.ob_string_dc.set_value("")
             else:
                 # 전송 후 discord용 phase_string과 etc_string 초기화 (한 번만 전송)
                 msg.phase_string_dc.set_value("")
                 msg.etc_string_dc.set_value("")
+                msg.mamacd_string_dc.set_value("")
+                msg.mamacd_string_dc_2.set_value("")
+                msg.ob_string_dc.set_value("")
 
 
 

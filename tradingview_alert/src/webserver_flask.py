@@ -2,7 +2,11 @@ from flask import Flask, request, jsonify
 from werkzeug.serving import WSGIRequestHandler
 
 # from msg import msg_queue, safe_string
-from msg import safe_string, phase_string_tg, etc_string_tg, phase_string_dc, etc_string_dc
+from msg import (
+    safe_string,
+    phase_string_tg, etc_string_tg, mamacd_string_tg, mamacd_string_tg_2, ob_string_tg,
+    phase_string_dc, etc_string_dc, mamacd_string_dc, mamacd_string_dc_2, ob_string_dc
+)
 from futures import future_alert_1, get_data_hdd, set_data_hdd
 
 from stock_data import save_stockdata_in_memory
@@ -191,7 +195,7 @@ def tradingview_etcalert():
     global etc_string_tg, etc_string_dc
 
     content_type = request.headers.get('Content-Type')
-    print("etc cross")
+    print("etc alert")
     print(content_type)
 
     raw_data: str = ""
@@ -298,6 +302,133 @@ def tradingview_phase_alert():
     # telegram용과 discord용 phase_string 모두에 메시지 추가
     phase_string_tg.append(message)
     phase_string_dc.append(message)
+
+    # 성공 응답
+    return jsonify({
+        "status": "success"
+    }), 200
+
+@app.route('/tradingview/mamacdalert', methods=['POST'])
+def tradingview_mamacdalert():
+    global mamacd_string_tg, mamacd_string_dc
+
+    content_type = request.headers.get('Content-Type')
+    print("mamacd alert")
+    print(content_type)
+
+    raw_data: str = ""
+
+    try:
+        raw_data = request.get_data(as_text=True, parse_form_data=False)
+    except Exception as e:
+        print("Error: request.get_data()")
+        print(e)
+        try:
+            raw_data = request.data.decode()
+        except Exception as e:
+            print("Error: request.data.decode()")
+            print(e)
+            print(raw_data)
+            raw_data = "None"
+
+    # 메시지가 없거나 비어있으면 에러
+    if not raw_data:
+        print("Error: No data received")
+        print(raw_data)
+        return jsonify({
+            "status": "error",
+            "message": "데이터가 없습니다."
+        }), 400
+
+    # telegram용과 discord용 mamacd_string 모두에 메시지 추가
+    mamacd_string_tg.append(raw_data)
+    mamacd_string_dc.append(raw_data)
+
+    # 성공 응답
+    return jsonify({
+        "status": "success"
+    }), 200
+
+
+
+@app.route('/tradingview/mamacd', methods=['POST'])
+def tradingview_mamacd():
+    global mamacd_string_tg_2, mamacd_string_dc_2
+
+    content_type = request.headers.get('Content-Type')
+    print("mamacd alert 2")
+    print(content_type)
+
+    raw_data: str = ""
+
+    try:
+        raw_data = request.get_data(as_text=True, parse_form_data=False)
+    except Exception as e:
+        print("Error: request.get_data()")
+        print(e)
+        try:
+            raw_data = request.data.decode()
+        except Exception as e:
+            print("Error: request.data.decode()")
+            print(e)
+            print(raw_data)
+            raw_data = "None"
+
+    # 메시지가 없거나 비어있으면 에러
+    if not raw_data:
+        print("Error: No data received")
+        print(raw_data)
+        return jsonify({
+            "status": "error",
+            "message": "데이터가 없습니다."
+        }), 400
+
+    # telegram용과 discord용 mamacd_string_2 모두에 메시지 추가
+    mamacd_string_tg_2.append(raw_data)
+    mamacd_string_dc_2.append(raw_data)
+
+    # 성공 응답
+    return jsonify({
+        "status": "success"
+    }), 200
+
+
+
+@app.route('/tradingview/obalert', methods=['POST'])
+def tradingview_obalert():
+    global ob_string_tg, ob_string_dc
+
+    content_type = request.headers.get('Content-Type')
+    print("order block alert")
+    print(content_type)
+
+    raw_data: str = ""
+
+    try:
+        raw_data = request.get_data(as_text=True, parse_form_data=False)
+    except Exception as e:
+        print("Error: request.get_data()")
+        print(e)
+        try:
+            raw_data = request.data.decode()
+        except Exception as e:
+            print("Error: request.data.decode()")
+            print(e)
+            print(raw_data)
+            raw_data = "None"
+
+    # 메시지가 없거나 비어있으면 에러
+    if not raw_data:
+        print("Error: No data received")
+        print(raw_data)
+        return jsonify({
+            "status": "error",
+            "message": "데이터가 없습니다."
+        }), 400
+
+    # telegram용과 discord용 ob_string 모두에 메시지 추가
+    ob_string_tg.append(raw_data)
+    ob_string_dc.append(raw_data)
 
     # 성공 응답
     return jsonify({

@@ -99,6 +99,15 @@ def telegram_bot_thread():
                 # telegram용 etc_string에서 메시지 읽기
                 etc_message = msg.etc_string_tg.get_value()
 
+                # telegram용 mamacd_string에서 메시지 읽기 (mamacdalert)
+                mamacd_message = msg.mamacd_string_tg.get_value()
+
+                # telegram용 mamacd_string_2에서 메시지 읽기 (mamacd)
+                mamacd_message_2 = msg.mamacd_string_tg_2.get_value()
+
+                # telegram용 ob_string에서 메시지 읽기
+                ob_message = msg.ob_string_tg.get_value()
+
                 # alert 메시지 추가
                 alert_message = alert_manager.get_alert_message()
                 if alert_message:
@@ -122,12 +131,36 @@ def telegram_bot_thread():
                         else:
                             msgdata = etc_message
 
+                    # mamacd_message를 메시지에 추가 (mamacdalert)
+                    if mamacd_message:
+                        if msgdata:
+                            msgdata += "\n" + mamacd_message
+                        else:
+                            msgdata = mamacd_message
+
+                    # mamacd_message_2를 메시지에 추가 (mamacd)
+                    if mamacd_message_2:
+                        if msgdata:
+                            msgdata += "\n" + mamacd_message_2
+                        else:
+                            msgdata = mamacd_message_2
+
+                    # ob_message를 메시지에 추가
+                    if ob_message:
+                        if msgdata:
+                            msgdata += "\n" + ob_message
+                        else:
+                            msgdata = ob_message
+
                 if msgdata and msgdata != "":
                     await telegram_msg_send(msgdata)
 
                 # 전송 후 telegram용 phase_string과 etc_string 초기화 (한 번만 전송)
                 msg.phase_string_tg.set_value("")
                 msg.etc_string_tg.set_value("")
+                msg.mamacd_string_tg.set_value("")
+                msg.mamacd_string_tg_2.set_value("")
+                msg.ob_string_tg.set_value("")
 
             # 짧은 대기 (CPU 부하 방지)
             await asyncio.sleep(1)

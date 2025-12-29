@@ -153,10 +153,16 @@ safe_string = SafeString()
 # telegram용
 phase_string_tg = SafeString()
 etc_string_tg = SafeString()
+mamacd_string_tg = SafeString()      # mamacdalert용
+mamacd_string_tg_2 = SafeString()    # mamacd용
+ob_string_tg = SafeString()
 
 # discord용
 phase_string_dc = SafeString()
 etc_string_dc = SafeString()
+mamacd_string_dc = SafeString()      # mamacdalert용
+mamacd_string_dc_2 = SafeString()    # mamacd용
+ob_string_dc = SafeString()
 
 
 
