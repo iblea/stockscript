@@ -4,6 +4,7 @@ import config
 import webserver_run as webserver
 import signal
 import sys
+import time
 import argparse
 import os
 
@@ -56,8 +57,20 @@ def main():
     discord_bot_run(config.data)
     start_telegram_bot(config.data)
 
-    # 시그널 발생 전까지 대기
-    signal.pause()
+    # 스레드 모니터링 루프 (signal.pause() 대신)
+    http_port = flask_config.get("http_port", 0)
+    https_port = flask_config.get("https_port", 0)
+    while running:
+        time.sleep(30)
+        if not running:
+            break
+        # 웹서버 스레드 상태 체크 및 재시작
+        if http_port > 0 and not webserver.is_http_alive():
+            print("WARNING: HTTP 서버 스레드가 죽어있습니다. 재시작 시도...")
+            webserver.run_webserver_thread(http_port=http_port, https_port=0)
+        if https_port > 0 and not webserver.is_https_alive():
+            print("WARNING: HTTPS 서버 스레드가 죽어있습니다. 재시작 시도...")
+            webserver.run_webserver_thread(http_port=0, https_port=https_port)
 
     # 안전한 종료 수행
     save_stockdata_in_disk()
