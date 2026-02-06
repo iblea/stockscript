@@ -34,6 +34,7 @@ def index():
 def tradingview_stock_data():
 
     json_data = None
+    raw_data = ""
     content_type = request.headers.get('Content-Type')
     print("stock data")
     print(content_type)
@@ -45,8 +46,8 @@ def tradingview_stock_data():
         else:
             # JSON 데이터가 아닌 경우, raw 데이터 가져오기
             print(f"This is not JSON content type. [{content_type}]")
-            json_data = request.get_data(as_text=True, parse_form_data=False)
-            json_data = json.loads(json_data)
+            raw_data = request.get_data(as_text=True, parse_form_data=False)
+            json_data = json.loads(raw_data)
         # print(json_data)
         print("Get Data by stock data len[{}]".format(len(str(json_data))))
     except Exception as e:
