@@ -3,13 +3,14 @@ import os
 import time
 import threading
 import traceback
+import waitress
 from werkzeug.serving import make_server, WSGIRequestHandler
 import webserver_flask as flask_app
 
 from config import check_cert, HTTPS_CERT_PATH, HTTPS_KEY_PATH
 
 
-# HTTP/1.1 사용하도록 설정
+# HTTP/1.1 사용하도록 설정 (HTTPS용 werkzeug)
 WSGIRequestHandler.protocol_version = "HTTP/1.1"
 
 # 스레드 참조 (외부 모니터링용)
@@ -21,10 +22,9 @@ def run_http(port) -> None:
     retry_count = 0
     while True:
         try:
-            http_server = make_server('0.0.0.0', port, flask_app.app)
-            print(f"HTTP 서버 시작 (재시도: {retry_count})")
+            print(f"HTTP 서버 시작 - waitress (재시도: {retry_count})")
             retry_count = 0
-            http_server.serve_forever()
+            waitress.serve(flask_app.app, host='0.0.0.0', port=port)
             break
         except Exception as e:
             retry_count += 1
