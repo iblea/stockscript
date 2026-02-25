@@ -239,6 +239,7 @@ def save_stockdata_in_memory(json_data: dict) -> bool:
         return False
 
     ticker = json_data.get('ticker', "").lower()
+    print("ticker: {}".format(ticker))
     data = StockData.setDict(json_data)
     stock_data_dict[ticker] = data
     return True
