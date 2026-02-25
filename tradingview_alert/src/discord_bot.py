@@ -164,6 +164,11 @@ class DiscordBot(discord.Client):
     def apply_command(self) -> None:
 
         @self.tree.command()
+        async def c(interaction: discord.Interaction):
+            print("chk command")
+            await check_message(interaction)
+
+        @self.tree.command()
         async def chk(interaction: discord.Interaction):
             print("chk command")
             await check_message(interaction)

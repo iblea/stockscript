@@ -211,6 +211,7 @@ def start_telegram_bot(config: dict):
     tg_bot = Application.builder().token(token).build()
 
     # 명령어 처리기 등록
+    tg_bot.add_handler(CommandHandler("c", handle_chk_command))
     tg_bot.add_handler(CommandHandler("chk", handle_chk_command))
     tg_bot.add_handler(CommandHandler("chka", handle_chka_command))
 
