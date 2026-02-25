@@ -214,6 +214,7 @@ def start_telegram_bot(config: dict):
     tg_bot.add_handler(CommandHandler("c", handle_chk_command))
     tg_bot.add_handler(CommandHandler("chk", handle_chk_command))
     tg_bot.add_handler(CommandHandler("chka", handle_chka_command))
+    tg_bot.add_handler(MessageHandler(filters.Regex(r"^(chk|c)$"), handle_chk_command))
 
     print("텔레그램 봇을 시작합니다")
 
