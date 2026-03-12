@@ -5,7 +5,7 @@ cert/**
 data/**
 output.log
 
-tradingview_alert/
+venv_tradingview_alert/
 
 __pycache__/
 **/__pycache__/
